@@ -209,6 +209,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030e0277f7a904d47bee758d53ccef56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rotation_speed: 3
+  fly_speed: 2.5
 --- !u!1 &1088050179
 GameObject:
   m_ObjectHideFlags: 0
@@ -236,9 +238,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21c46f4bbf3b8004281efddffa9db2c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldName: world
-  chunkPrefab: {fileID: 1750873422479078, guid: 87ce12d11dd914d4fadb2a04b40ed2a7,
+  save_name: world
+  chunk_prefab: {fileID: 1750873422479078, guid: 87ce12d11dd914d4fadb2a04b40ed2a7,
     type: 2}
+  world_size: 6
+  mesh_generation_type: 0
+  terrain_generator:
+    stone_base_height: -25
+    stone_base_noise_scale: 0.05
+    stone_base_noise_height: 4.5
+    stone_mountain_height: 48
+    stone_mountain_frequency: 0.02
+    stone_minimum_height: -11
+    grass_base_height: 1
+    grass_noise_scale: 0.04
+    grass_noise_height: 3
 --- !u!4 &1088050181
 Transform:
   m_ObjectHideFlags: 0

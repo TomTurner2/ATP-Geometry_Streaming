@@ -61,6 +61,37 @@ public class Voxel
     {
         _mesh_info.collider_from_mesh = true;//by default create collider from mesh
 
+        switch (_chunk.voxel_world.mesh_generation_type)
+        {
+            case MeshGenerationType.NAIVE_CUBES:
+                return NaiveCube(_chunk, _x, _y, _z, _mesh_info);
+            case MeshGenerationType.CUBES:
+                return Cubes(_x, _y, _z, _mesh_info);
+            case MeshGenerationType.MARCHING_CUBES:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        return _mesh_info;
+    }
+
+
+    private MeshInfo Cubes(int _x, int _y, int _z, MeshInfo _mesh_info)
+    {
+        _mesh_info = CreateTopFace(_x, _y, _z, _mesh_info);
+        _mesh_info = CreateBottomFace(_x, _y, _z, _mesh_info);
+        _mesh_info = CreateBackFace(_x, _y, _z, _mesh_info);
+        _mesh_info = CreateFrontFace(_x, _y, _z, _mesh_info);
+        _mesh_info = CreateRightFace(_x, _y, _z, _mesh_info);
+        _mesh_info = CreateLeftFace(_x, _y, _z, _mesh_info);
+
+        return _mesh_info;
+    }
+
+
+    private MeshInfo NaiveCube(Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
+    {
         //determine face to create based on adjacency
         if (!_chunk.GetVoxel(_x, _y + 1, _z).IsSolid())
             _mesh_info = CreateTopFace(_x, _y, _z, _mesh_info);

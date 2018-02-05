@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[RequireComponent(typeof(MeshFilter))]//Unity will add these automaticly when instantiated
+[RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshCollider))]
 public class Chunk : MonoBehaviour
 {
     public static int chunk_size = 16;
     public Voxel[,,] voxels = new Voxel[chunk_size, chunk_size, chunk_size];
-    public VoxelWorld voxel_voxel_world;
-    public intVector3 voxel_world_position; 
+    public VoxelWorld voxel_world;
+    public intVector3 voxel_world_position;
     public bool edited = true;
 
     private MeshFilter mesh_filter;
@@ -41,7 +41,7 @@ public class Chunk : MonoBehaviour
         if (VoxelInChunk(_x, _y, _z))//if voxel is in this chunk return it
             return voxels[_x, _y, _z];
 
-        return voxel_voxel_world.GetBlock(voxel_world_position.x + _x, voxel_world_position.y +
+        return voxel_world.GetBlock(voxel_world_position.x + _x, voxel_world_position.y +
             _y, voxel_world_position.z + _z);//if voxel not in chunk find it through world
     }
 
@@ -66,7 +66,7 @@ public class Chunk : MonoBehaviour
         }
         else
         {
-            voxel_voxel_world.SetBlock(voxel_world_position.x + _x, voxel_world_position.y +
+            voxel_world.SetBlock(voxel_world_position.x + _x, voxel_world_position.y +
                 _y, voxel_world_position.z + _z, _voxel);//if not in chunk set voxel through world
         }
     }
@@ -115,7 +115,6 @@ public class Chunk : MonoBehaviour
             triangles = _mesh_info.collider_indices.ToArray()
         };
         mesh.RecalculateNormals();
-
         mesh_collider.sharedMesh = mesh;
     }
 
@@ -126,5 +125,13 @@ public class Chunk : MonoBehaviour
         {
             voxel.edited = false;
         }
+    }
+
+
+    private void OnDrawGizmos()
+    {
+        float offset = chunk_size * 0.5f - 0.5f;
+        Gizmos.DrawWireCube(voxel_world_position.ToVector3() + Vector3.one * offset,
+            new Vector3(chunk_size, chunk_size, chunk_size));
     }
 }

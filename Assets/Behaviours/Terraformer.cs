@@ -43,7 +43,7 @@ public static class Terraformer
             _pos -= (_normal * 0.5f);
         }
 
-        return (float)_pos;
+        return _pos;
     }
 
 
@@ -55,7 +55,7 @@ public static class Terraformer
 
         intVector3 position = GetBlockPos(_hit, _adjacent);
 
-        chunk.voxel_voxel_world.SetBlock(position.x, position.y, position.z, _voxel);
+        chunk.voxel_world.SetBlock(position.x, position.y, position.z, _voxel);
 
         return true;
     }
@@ -68,7 +68,7 @@ public static class Terraformer
             return null;
 
         intVector3 position = GetBlockPos(_hit, _adjacent);
-        Voxel voxel = chunk.voxel_voxel_world.GetBlock(position.x, position.y, position.z);
+        Voxel voxel = chunk.voxel_world.GetBlock(position.x, position.y, position.z);
 
         return voxel;
     }

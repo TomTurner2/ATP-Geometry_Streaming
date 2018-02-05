@@ -32,7 +32,7 @@ public static class Serialization
         Save save = new Save(chunk);    //Add these lines
         if (save.blocks.Count == 0)     //to the start
             return;                     //of the function
-        string saveFile = SaveLocation(chunk.voxel_voxel_world.worldName);
+        string saveFile = SaveLocation(chunk.voxel_world.save_name);
         saveFile += FileName(chunk.voxel_world_position);
         IFormatter formatter = new BinaryFormatter();
         Stream stream = new FileStream(saveFile, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -43,7 +43,7 @@ public static class Serialization
 
     public static bool Load(Chunk chunk)
     {
-        string saveFile = SaveLocation(chunk.voxel_voxel_world.worldName);
+        string saveFile = SaveLocation(chunk.voxel_world.save_name);
         saveFile += FileName(chunk.voxel_world_position);
 
         if (!File.Exists(saveFile))

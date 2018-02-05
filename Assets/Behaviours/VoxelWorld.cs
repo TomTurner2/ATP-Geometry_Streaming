@@ -2,50 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum MeshGenerationType
+{
+    NAIVE_CUBES,
+    CUBES, 
+    MARCHING_CUBES
+};
+
+
 public class VoxelWorld : MonoBehaviour
 {
-    public string worldName = "world";
-    public Dictionary<intVector3, Chunk> chunks = new Dictionary<intVector3, Chunk>();
-    public GameObject chunkPrefab;
-    //public int newChunkX;
-    //public int newChunkY;
-    //public int newChunkZ;
+    [HideInInspector] public string save_name = "world";
+    [HideInInspector] public Dictionary<intVector3, Chunk> chunks = new Dictionary<intVector3, Chunk>();
 
-    //public bool genChunk;
+    public GameObject chunk_prefab;
+    public int world_size = 6;
+    public MeshGenerationType mesh_generation_type = MeshGenerationType.NAIVE_CUBES;
+    [Space]
 
-    // Use this for initialization
+    [SerializeField] TerrainGenerator terrain_generator = new TerrainGenerator();
+
+
     void Start()
     {
-        for (int x = -4; x < 4; x++)
+        for (int x = -world_size; x < world_size; x++)
         {
-            for (int y = -1; y < 0; y++)
+            for (int y = -1; y < world_size; y++)
             {
-                for (int z = -4; z < 4; z++)
+                for (int z = -world_size; z < world_size; z++)
                 {
-                    CreateChunk(x * 16, y * 16, z * 16);
+                    CreateChunk(x * Chunk.chunk_size, y * Chunk.chunk_size, z * Chunk.chunk_size);
                 }
             }
         }
-    }
-
-
-    void Update ()
-    {
-        //if (genChunk)
-        //{
-        //    genChunk = false;
-        //    WorldPos chunkPos = new WorldPos(newChunkX, newChunkY, newChunkZ);
-        //    Chunk chunk = null;
-
-        //    if (chunks.TryGetValue(chunkPos, out chunk))
-        //    {
-        //        DestroyChunk(chunkPos.x, chunkPos.y, chunkPos.z);
-        //    }
-        //    else
-        //    {
-        //        CreateChunk(chunkPos.x, chunkPos.y, chunkPos.z);
-        //    }
-        //}
     }
 
 
@@ -54,73 +44,43 @@ public class VoxelWorld : MonoBehaviour
         //the coordinates of chunk in the world
         intVector3 voxel_world_position = new intVector3(_x, _y, _z);
 
-        GameObject chunk_object = Instantiate(chunkPrefab, new Vector3(voxel_world_position.x,
+        GameObject chunk_object = Instantiate(chunk_prefab, new Vector3(voxel_world_position.x,
             voxel_world_position.y, voxel_world_position.z),Quaternion.Euler(Vector3.zero));
 
         Chunk chunk = chunk_object.GetComponent<Chunk>();
         chunk.voxel_world_position = voxel_world_position;
-        chunk.voxel_voxel_world = this;
+        chunk.voxel_world = this;
         chunk.transform.parent = transform;
         chunk.name = "World Chunk";
+        chunk.gameObject.isStatic = true;
 
         chunks.Add(voxel_world_position, chunk);//store chunk in dictionary by its position
-
-
-        for (int xi = 0; xi < Chunk.chunk_size; xi++)
-        {
-            for (int yi = 0; yi < Chunk.chunk_size; yi++)
-            {
-                for (int zi = 0; zi < Chunk.chunk_size; zi++)
-                {
-                    if (yi <= 7)
-                    {
-                        if (yi <= 6)
-                        {
-                            SetBlock(_x + xi, _y + yi, _z + zi, new VoxelStone());
-                        }
-                        else
-                        {
-                            SetBlock(_x + xi, _y + yi, _z + zi, new VoxelGrass());
-                        }
-                        
-                    }
-                    else
-                    {
-                        SetBlock(_x + xi, _y + yi, _z + zi, new VoxelAir());
-                    }
-                }
-            }
-        }
-
-
-        //test
-        //var terrainGen = new TerrainGenerator();
-        //newChunk = terrainGen.ChunkGen(newChunk);
+        chunk = terrain_generator.GenerateChunk(chunk);
 
         chunk.SetVoxelsUnEdited();
         Serialization.Load(chunk);
     }
 
 
-    public void DestroyChunk(int x, int y, int z)
+    public void DestroyChunk(int _x, int _y, int _z)
     {
         Chunk chunk = null;
-        if (!chunks.TryGetValue(new intVector3(x, y, z), out chunk))//if not in dictionary leave
+        if (!chunks.TryGetValue(new intVector3(_x, _y, _z), out chunk))//if not in dictionary leave
             return;
 
         Serialization.SaveChunk(chunk);//if chunk exists save it
         UnityEngine.Object.Destroy(chunk.gameObject);//destroy chunk
-        chunks.Remove(new intVector3(x, y, z));//remove entry from dictionary
+        chunks.Remove(new intVector3(_x, _y, _z));//remove entry from dictionary
     }
 
 
-    public Chunk GetChunk(int x, int y, int z)
+    public Chunk GetChunk(int _x, int _y, int _z)
     {
         intVector3 position = new intVector3();
         float multiple = Chunk.chunk_size;
-        position.x = Mathf.FloorToInt(x / multiple) * Chunk.chunk_size;
-        position.y = Mathf.FloorToInt(y / multiple) * Chunk.chunk_size;
-        position.z = Mathf.FloorToInt(z / multiple) * Chunk.chunk_size;
+        position.x = Mathf.FloorToInt(_x / multiple) * Chunk.chunk_size;
+        position.y = Mathf.FloorToInt(_y / multiple) * Chunk.chunk_size;
+        position.z = Mathf.FloorToInt(_z / multiple) * Chunk.chunk_size;
 
         Chunk containerChunk = null;
         chunks.TryGetValue(position, out containerChunk);
@@ -129,15 +89,15 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
-    public Voxel GetBlock(int x, int y, int z)
+    public Voxel GetBlock(int _x, int _y, int _z)
     {
-        Chunk containerChunk = GetChunk(x, y, z);
+        Chunk containerChunk = GetChunk(_x, _y, _z);
         if (containerChunk != null)
         {
             Voxel voxel = containerChunk.GetVoxel(
-                x - containerChunk.voxel_world_position.x,
-                y - containerChunk.voxel_world_position.y,
-                z - containerChunk.voxel_world_position.z);
+                _x - containerChunk.voxel_world_position.x,
+                _y - containerChunk.voxel_world_position.y,
+                _z - containerChunk.voxel_world_position.z);
 
             return voxel;
         }
@@ -149,33 +109,35 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
-    public void SetBlock(int x, int y, int z, Voxel voxel)
+    public void SetBlock(int _x, int _y, int _z, Voxel _voxel)
     {
-        Chunk chunk = GetChunk(x, y, z);
+        Chunk chunk = GetChunk(_x, _y, _z);
 
         if (chunk == null)
             return;
 
-        chunk.SetVoxel(x - chunk.voxel_world_position.x, y - chunk.voxel_world_position.y, z - chunk.voxel_world_position.z, voxel);
+        intVector3 voxel_chunk_pos = new intVector3(_x - chunk.voxel_world_position.x, _y - chunk.voxel_world_position.y, _z - chunk.voxel_world_position.z);
+
+        chunk.SetVoxel(voxel_chunk_pos.x, voxel_chunk_pos.y, voxel_chunk_pos.z, _voxel);
         chunk.edited = true;
 
         //update neighbouring chunks
-        UpdateIfEqual(x - chunk.voxel_world_position.x, 0, new intVector3(x - 1, y, z));
-        UpdateIfEqual(x - chunk.voxel_world_position.x, Chunk.chunk_size - 1, new intVector3(x + 1, y, z));
-        UpdateIfEqual(y - chunk.voxel_world_position.y, 0, new intVector3(x, y - 1, z));
-        UpdateIfEqual(y - chunk.voxel_world_position.y, Chunk.chunk_size - 1, new intVector3(x, y + 1, z));
-        UpdateIfEqual(z - chunk.voxel_world_position.z, 0, new intVector3(x, y, z - 1));
-        UpdateIfEqual(z - chunk.voxel_world_position.z, Chunk.chunk_size - 1, new intVector3(x, y, z + 1));
+        SetNeighbourEditedIfEqual(voxel_chunk_pos.x, 0, new intVector3(_x - 1, _y, _z));//if offset x - 1 less than zero (in adjacent chunk) the neighbouring chunk should update
+        SetNeighbourEditedIfEqual(voxel_chunk_pos.x, Chunk.chunk_size - 1, new intVector3(_x + 1, _y, _z));
+        SetNeighbourEditedIfEqual(voxel_chunk_pos.y, 0, new intVector3(_x, _y - 1, _z));
+        SetNeighbourEditedIfEqual(voxel_chunk_pos.y, Chunk.chunk_size - 1, new intVector3(_x, _y + 1, _z));
+        SetNeighbourEditedIfEqual(voxel_chunk_pos.z, 0, new intVector3(_x, _y, _z - 1));
+        SetNeighbourEditedIfEqual(voxel_chunk_pos.z, Chunk.chunk_size - 1, new intVector3(_x, _y, _z + 1));
     }
 
 
-    void UpdateIfEqual(int value1, int value2, intVector3 position)
+    void SetNeighbourEditedIfEqual(int _voxel_chunk_position, int _check_value, intVector3 _position)
     {
-        if (value1 == value2)
-        {
-            Chunk chunk = GetChunk(position.x, position.y, position.z);
-            if (chunk != null)
-                chunk.edited = true;
-        }
+        if (_voxel_chunk_position != _check_value)
+            return;
+
+        Chunk chunk = GetChunk(_position.x, _position.y, _position.z);
+        if (chunk != null)
+            chunk.edited = true;
     }
 }

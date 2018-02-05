@@ -15,7 +15,12 @@ public struct intVector3
     }
 
 
-    //for quicker comparison
+    public Vector3 ToVector3()
+    {
+        return new Vector3(x, y, z);
+    }
+
+
     public override bool Equals(object _object)
     {
         if (!(_object is intVector3))//if not a world position

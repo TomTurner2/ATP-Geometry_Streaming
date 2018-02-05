@@ -28,7 +28,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &4121482793788494
 Transform:
@@ -107,4 +107,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 919d02fb337c8074680da3d323509042, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  update: 1
+  voxel_world: {fileID: 0}
+  voxel_world_position:
+    x: 0
+    y: 0
+    z: 0
+  edited: 0
+  rendered: 0

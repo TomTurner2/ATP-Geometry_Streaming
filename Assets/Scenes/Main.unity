@@ -121,6 +121,7 @@ GameObject:
   - component: {fileID: 664471070}
   - component: {fileID: 664471069}
   - component: {fileID: 664471074}
+  - component: {fileID: 664471075}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -192,7 +193,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 664471068}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 20, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -210,7 +211,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotation_speed: 3
-  fly_speed: 2.5
+  fly_speed: 1
+--- !u!114 &664471075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 664471068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d269267b7a9baf49b74e00af6ea3bae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  voxel_world: {fileID: 1088050180}
+  view_distance: 512
+  chunk_unload_delay: 5
+  max_chunk_y: 8
+  max_chunks_built_per_frame: 8
+  lazy_load: 0
 --- !u!1 &1088050179
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,18 +259,19 @@ MonoBehaviour:
   save_name: world
   chunk_prefab: {fileID: 1750873422479078, guid: 87ce12d11dd914d4fadb2a04b40ed2a7,
     type: 2}
-  world_size: 6
   mesh_generation_type: 0
   terrain_generator:
-    stone_base_height: -25
-    stone_base_noise_scale: 0.05
+    stone_base_height: -10
+    stone_base_noise_scale: 0.11
     stone_base_noise_height: 4.5
-    stone_mountain_height: 48
+    stone_mountain_height: 49.33
     stone_mountain_frequency: 0.02
     stone_minimum_height: -11
     grass_base_height: 1
     grass_noise_scale: 0.04
     grass_noise_height: 3
+    cave_frequency: 0.03
+    cave_size: 10
 --- !u!4 &1088050181
 Transform:
   m_ObjectHideFlags: 0

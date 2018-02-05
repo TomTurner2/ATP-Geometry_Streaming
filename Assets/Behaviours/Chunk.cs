@@ -12,7 +12,8 @@ public class Chunk : MonoBehaviour
     public Voxel[,,] voxels = new Voxel[chunk_size, chunk_size, chunk_size];
     public VoxelWorld voxel_world;
     public intVector3 voxel_world_position;
-    public bool edited = true;
+    public bool edited = false;//also used to determine if chunk needs updating
+    public bool rendered = false;
 
     private MeshFilter mesh_filter;
     private MeshCollider mesh_collider;
@@ -74,6 +75,8 @@ public class Chunk : MonoBehaviour
 
     void UpdateChunk()
     {
+        rendered = true;
+
         MeshInfo mesh_info = new MeshInfo();
         for (int x = 0; x < chunk_size; x++)
         {

@@ -21,6 +21,12 @@ public class TerrainGenerator
     [SerializeField] float grass_base_height = 1;
     [SerializeField] float grass_noise_scale = 0.04f;
     [SerializeField] float grass_noise_height = 3;
+    [Space]
+
+    [Header("Caves")]
+    [SerializeField] float cave_frequency = 0.03f;
+    [SerializeField] float cave_size = 8;
+
 
 
     public Chunk GenerateChunk(Chunk _chunk)
@@ -38,25 +44,26 @@ public class TerrainGenerator
 
     public Chunk GenerateChunkColumn(Chunk _chunk, int _x, int _z)
     {
-        int stone_height = GenerateStone(_x, _z);
-        int grass_height = GenerateGrass(_x, _z, stone_height);
-
+        int stone_mask = GenerateStone(_x, _z);
+        int grass_mask = GenerateGrass(_x, _z, stone_mask);
+        
 
         for (int y = _chunk.voxel_world_position.y; y < _chunk.voxel_world_position.y + Chunk.chunk_size; ++y)
         {
-            SetVoxelType(_chunk, _x, y, _z, stone_height, grass_height);//determine voxel based on height
+            int caves_mask = GenerateCaves(_x, y, _z);//caves use 3d noise
+            SetVoxelType(_chunk, _x, y, _z, stone_mask, grass_mask, caves_mask);//determine voxel based on height
         }
         return _chunk;
     }
 
 
-    private void SetVoxelType(Chunk _chunk,int _x, int _y, int _z, int _stone_height, int _grass_height)
+    private void SetVoxelType(Chunk _chunk, int _x, int _y, int _z, int _stone_mask, int _grass_mask, int _cave_mask)
     {
-        if (_y <= _stone_height)
+        if (_y <= _stone_mask && cave_size < _cave_mask)
         {
             _chunk.SetVoxel(_x - _chunk.voxel_world_position.x, _y - _chunk.voxel_world_position.y, _z - _chunk.voxel_world_position.z, new VoxelStone());
         }
-        else if (_y <= _grass_height)
+        else if (_y <= _grass_mask && cave_size < _cave_mask)
         {
             _chunk.SetVoxel(_x - _chunk.voxel_world_position.x, _y - _chunk.voxel_world_position.y, _z - _chunk.voxel_world_position.z, new VoxelGrass());
         }
@@ -85,6 +92,12 @@ public class TerrainGenerator
 
         stone_height += GetNoise(_x, 0, _z, stone_base_noise_scale, Mathf.FloorToInt(stone_base_noise_height));//add additional noise
         return stone_height;
+    }
+
+
+    private int GenerateCaves(int _x, int _y, int _z)
+    {
+        return GetNoise(_x, _y, _z, cave_frequency, 100);
     }
 
 

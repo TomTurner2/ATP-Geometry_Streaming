@@ -13,30 +13,14 @@ public enum MeshGenerationType
 
 public class VoxelWorld : MonoBehaviour
 {
-    [HideInInspector] public string save_name = "world";
+    [HideInInspector] public string save_name = "World";
     [HideInInspector] public Dictionary<intVector3, Chunk> chunks = new Dictionary<intVector3, Chunk>();
 
     public GameObject chunk_prefab;
-    public int world_size = 6;
     public MeshGenerationType mesh_generation_type = MeshGenerationType.NAIVE_CUBES;
     [Space]
 
     [SerializeField] TerrainGenerator terrain_generator = new TerrainGenerator();
-
-
-    void Start()
-    {
-        for (int x = -world_size; x < world_size; x++)
-        {
-            for (int y = -1; y < world_size; y++)
-            {
-                for (int z = -world_size; z < world_size; z++)
-                {
-                    CreateChunk(x * Chunk.chunk_size, y * Chunk.chunk_size, z * Chunk.chunk_size);
-                }
-            }
-        }
-    }
 
 
     public void CreateChunk(int _x, int _y, int _z)
@@ -68,8 +52,8 @@ public class VoxelWorld : MonoBehaviour
         if (!chunks.TryGetValue(new intVector3(_x, _y, _z), out chunk))//if not in dictionary leave
             return;
 
-        Serialization.SaveChunk(chunk);//if chunk exists save it
-        UnityEngine.Object.Destroy(chunk.gameObject);//destroy chunk
+        Serialization.SaveChunk(chunk);//save chunk
+        Destroy(chunk.gameObject);//destroy chunk
         chunks.Remove(new intVector3(_x, _y, _z));//remove entry from dictionary
     }
 
@@ -77,35 +61,30 @@ public class VoxelWorld : MonoBehaviour
     public Chunk GetChunk(int _x, int _y, int _z)
     {
         intVector3 position = new intVector3();
-        float multiple = Chunk.chunk_size;
-        position.x = Mathf.FloorToInt(_x / multiple) * Chunk.chunk_size;
-        position.y = Mathf.FloorToInt(_y / multiple) * Chunk.chunk_size;
-        position.z = Mathf.FloorToInt(_z / multiple) * Chunk.chunk_size;
+        float chunk_size = Chunk.chunk_size;//convert to float for division
 
-        Chunk containerChunk = null;
-        chunks.TryGetValue(position, out containerChunk);
+        position.x = Mathf.FloorToInt(_x / chunk_size) * Chunk.chunk_size;
+        position.y = Mathf.FloorToInt(_y / chunk_size) * Chunk.chunk_size;
+        position.z = Mathf.FloorToInt(_z / chunk_size) * Chunk.chunk_size;
 
-        return containerChunk;
+        Chunk chunk = null;
+        chunks.TryGetValue(position, out chunk);
+
+        return chunk;
     }
 
 
     public Voxel GetBlock(int _x, int _y, int _z)
     {
-        Chunk containerChunk = GetChunk(_x, _y, _z);
-        if (containerChunk != null)
-        {
-            Voxel voxel = containerChunk.GetVoxel(
-                _x - containerChunk.voxel_world_position.x,
-                _y - containerChunk.voxel_world_position.y,
-                _z - containerChunk.voxel_world_position.z);
+        Chunk chunk = GetChunk(_x, _y, _z);
 
-            return voxel;
-        }
-        else
-        {
+        if (chunk == null)
             return new VoxelAir();
-        }
 
+        Voxel voxel = chunk.GetVoxel(_x - chunk.voxel_world_position.x, _y - chunk.voxel_world_position.y,
+            _z - chunk.voxel_world_position.z);
+
+        return voxel;
     }
 
 
@@ -138,6 +117,14 @@ public class VoxelWorld : MonoBehaviour
 
         Chunk chunk = GetChunk(_position.x, _position.y, _position.z);
         if (chunk != null)
-            chunk.edited = true;
+            chunk.edited = true;//set chunk as edited so it updates
+    }
+
+
+    public static intVector3 PositionToWorldPosition(Vector3 _position)
+    {
+        return new intVector3(Mathf.FloorToInt(_position.x / Chunk.chunk_size) * Chunk.chunk_size,
+            Mathf.FloorToInt(_position.y / Chunk.chunk_size) * Chunk.chunk_size,
+            Mathf.FloorToInt(_position.z / Chunk.chunk_size) * Chunk.chunk_size);//snaps position to int
     }
 }

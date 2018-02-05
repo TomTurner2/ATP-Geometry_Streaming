@@ -21,7 +21,7 @@ public struct intVector3
     }
 
 
-    public override bool Equals(object _object)
+    public override bool Equals(object _object)//override equals operator
     {
         if (!(_object is intVector3))//if not a world position
             return false;//ignore

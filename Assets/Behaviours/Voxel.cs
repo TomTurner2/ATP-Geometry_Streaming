@@ -44,13 +44,13 @@ public class Voxel
         TileTexture tile_texture_pos = GetTextureCoordsByDirection(_direction);
 
         //Calculate uvs based on tile coordinates
-        uvs[0] = new Vector2(tile_texture_size * tile_texture_pos.x + tile_texture_size,
+        uvs[0] = new Vector2(tile_texture_size * tile_texture_pos.x,
             tile_texture_size * tile_texture_pos.y);
-        uvs[1] = new Vector2(tile_texture_size * tile_texture_pos.x + tile_texture_size,
+        uvs[1] = new Vector2(tile_texture_size * tile_texture_pos.x,
             tile_texture_size * tile_texture_pos.y + tile_texture_size);
-        uvs[2] = new Vector2(tile_texture_size * tile_texture_pos.x,
+        uvs[2] = new Vector2(tile_texture_size * tile_texture_pos.x + tile_texture_size,
             tile_texture_size * tile_texture_pos.y + tile_texture_size);
-        uvs[3] = new Vector2(tile_texture_size * tile_texture_pos.x,
+        uvs[3] = new Vector2(tile_texture_size * tile_texture_pos.x + tile_texture_size,
             tile_texture_size * tile_texture_pos.y);
 
         return uvs;

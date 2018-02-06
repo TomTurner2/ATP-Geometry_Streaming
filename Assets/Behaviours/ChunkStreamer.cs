@@ -1,65 +1,50 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class ChunkStreamer : MonoBehaviour
 {
     [SerializeField] VoxelWorld voxel_world;
-    [SerializeField] uint view_distance = 64;
+    [SerializeField] uint unload_distance = 256;
     [SerializeField] float chunk_unload_delay = 5;
     [SerializeField] uint max_chunk_y = 8;
+    [SerializeField] uint max_chunk_radius = 8;
     [SerializeField] uint max_chunks_built_per_frame = 2;
-    [SerializeField] uint lazy_load = 32;
     
     private List<intVector3> update_list = new List<intVector3>();
     private List<intVector3> load_list = new List<intVector3>();
     private float unload_timer = 0;
 
+    private static List<intVector3> chunk_positions = null;
     private static List<ChunkStreamer> active_chunk_streamers = new List<ChunkStreamer>();
-    private static intVector3[] chunk_positions = {   new intVector3( 0, 0,  0), new intVector3(-1, 0,  0), new intVector3( 0, 0, -1), new intVector3( 0, 0,  1), new intVector3( 1, 0,  0),
-        new intVector3(-1, 0, -1), new intVector3(-1, 0,  1), new intVector3( 1, 0, -1), new intVector3( 1, 0,  1), new intVector3(-2, 0,  0),
-        new intVector3( 0, 0, -2), new intVector3( 0, 0,  2), new intVector3( 2, 0,  0), new intVector3(-2, 0, -1), new intVector3(-2, 0,  1),
-        new intVector3(-1, 0, -2), new intVector3(-1, 0,  2), new intVector3( 1, 0, -2), new intVector3( 1, 0,  2), new intVector3( 2, 0, -1),
-        new intVector3( 2, 0,  1), new intVector3(-2, 0, -2), new intVector3(-2, 0,  2), new intVector3( 2, 0, -2), new intVector3( 2, 0,  2),
-        new intVector3(-3, 0,  0), new intVector3( 0, 0, -3), new intVector3( 0, 0,  3), new intVector3( 3, 0,  0), new intVector3(-3, 0, -1),
-        new intVector3(-3, 0,  1), new intVector3(-1, 0, -3), new intVector3(-1, 0,  3), new intVector3( 1, 0, -3), new intVector3( 1, 0,  3),
-        new intVector3( 3, 0, -1), new intVector3( 3, 0,  1), new intVector3(-3, 0, -2), new intVector3(-3, 0,  2), new intVector3(-2, 0, -3),
-        new intVector3(-2, 0,  3), new intVector3( 2, 0, -3), new intVector3( 2, 0,  3), new intVector3( 3, 0, -2), new intVector3( 3, 0,  2),
-        new intVector3(-4, 0,  0), new intVector3( 0, 0, -4), new intVector3( 0, 0,  4), new intVector3( 4, 0,  0), new intVector3(-4, 0, -1),
-        new intVector3(-4, 0,  1), new intVector3(-1, 0, -4), new intVector3(-1, 0,  4), new intVector3( 1, 0, -4), new intVector3( 1, 0,  4),
-        new intVector3( 4, 0, -1), new intVector3( 4, 0,  1), new intVector3(-3, 0, -3), new intVector3(-3, 0,  3), new intVector3( 3, 0, -3),
-        new intVector3( 3, 0,  3), new intVector3(-4, 0, -2), new intVector3(-4, 0,  2), new intVector3(-2, 0, -4), new intVector3(-2, 0,  4),
-        new intVector3( 2, 0, -4), new intVector3( 2, 0,  4), new intVector3( 4, 0, -2), new intVector3( 4, 0,  2), new intVector3(-5, 0,  0),
-        new intVector3(-4, 0, -3), new intVector3(-4, 0,  3), new intVector3(-3, 0, -4), new intVector3(-3, 0,  4), new intVector3( 0, 0, -5),
-        new intVector3( 0, 0,  5), new intVector3( 3, 0, -4), new intVector3( 3, 0,  4), new intVector3( 4, 0, -3), new intVector3( 4, 0,  3),
-        new intVector3( 5, 0,  0), new intVector3(-5, 0, -1), new intVector3(-5, 0,  1), new intVector3(-1, 0, -5), new intVector3(-1, 0,  5),
-        new intVector3( 1, 0, -5), new intVector3( 1, 0,  5), new intVector3( 5, 0, -1), new intVector3( 5, 0,  1), new intVector3(-5, 0, -2),
-        new intVector3(-5, 0,  2), new intVector3(-2, 0, -5), new intVector3(-2, 0,  5), new intVector3( 2, 0, -5), new intVector3( 2, 0,  5),
-        new intVector3( 5, 0, -2), new intVector3( 5, 0,  2), new intVector3(-4, 0, -4), new intVector3(-4, 0,  4), new intVector3( 4, 0, -4),
-        new intVector3( 4, 0,  4), new intVector3(-5, 0, -3), new intVector3(-5, 0,  3), new intVector3(-3, 0, -5), new intVector3(-3, 0,  5),
-        new intVector3( 3, 0, -5), new intVector3( 3, 0,  5), new intVector3( 5, 0, -3), new intVector3( 5, 0,  3), new intVector3(-6, 0,  0),
-        new intVector3( 0, 0, -6), new intVector3( 0, 0,  6), new intVector3( 6, 0,  0), new intVector3(-6, 0, -1), new intVector3(-6, 0,  1),
-        new intVector3(-1, 0, -6), new intVector3(-1, 0,  6), new intVector3( 1, 0, -6), new intVector3( 1, 0,  6), new intVector3( 6, 0, -1),
-        new intVector3( 6, 0,  1), new intVector3(-6, 0, -2), new intVector3(-6, 0,  2), new intVector3(-2, 0, -6), new intVector3(-2, 0,  6),
-        new intVector3( 2, 0, -6), new intVector3( 2, 0,  6), new intVector3( 6, 0, -2), new intVector3( 6, 0,  2), new intVector3(-5, 0, -4),
-        new intVector3(-5, 0,  4), new intVector3(-4, 0, -5), new intVector3(-4, 0,  5), new intVector3( 4, 0, -5), new intVector3( 4, 0,  5),
-        new intVector3( 5, 0, -4), new intVector3( 5, 0,  4), new intVector3(-6, 0, -3), new intVector3(-6, 0,  3), new intVector3(-3, 0, -6),
-        new intVector3(-3, 0,  6), new intVector3( 3, 0, -6), new intVector3( 3, 0,  6), new intVector3( 6, 0, -3), new intVector3( 6, 0,  3),
-        new intVector3(-7, 0,  0), new intVector3( 0, 0, -7), new intVector3( 0, 0,  7), new intVector3( 7, 0,  0), new intVector3(-7, 0, -1),
-        new intVector3(-7, 0,  1), new intVector3(-5, 0, -5), new intVector3(-5, 0,  5), new intVector3(-1, 0, -7), new intVector3(-1, 0,  7),
-        new intVector3( 1, 0, -7), new intVector3( 1, 0,  7), new intVector3( 5, 0, -5), new intVector3( 5, 0,  5), new intVector3( 7, 0, -1),
-        new intVector3( 7, 0,  1), new intVector3(-6, 0, -4), new intVector3(-6, 0,  4), new intVector3(-4, 0, -6), new intVector3(-4, 0,  6),
-        new intVector3( 4, 0, -6), new intVector3( 4, 0,  6), new intVector3( 6, 0, -4), new intVector3( 6, 0,  4), new intVector3(-7, 0, -2),
-        new intVector3(-7, 0,  2), new intVector3(-2, 0, -7), new intVector3(-2, 0,  7), new intVector3( 2, 0, -7), new intVector3( 2, 0,  7),
-        new intVector3( 7, 0, -2), new intVector3( 7, 0,  2), new intVector3(-7, 0, -3), new intVector3(-7, 0,  3), new intVector3(-3, 0, -7),
-        new intVector3(-3, 0,  7), new intVector3( 3, 0, -7), new intVector3( 3, 0,  7), new intVector3( 7, 0, -3), new intVector3( 7, 0,  3),
-        new intVector3(-6, 0, -5), new intVector3(-6, 0,  5), new intVector3(-5, 0, -6), new intVector3(-5, 0,  6), new intVector3( 5, 0, -6),
-        new intVector3( 5, 0,  6), new intVector3( 6, 0, -5), new intVector3( 6, 0,  5) };
 
 
     private void Start()
     {
+        if (chunk_positions == null)
+            GenerateStaticChunkPositions();
+
+
         active_chunk_streamers.Add(this);
+    }
+
+
+    void GenerateStaticChunkPositions()
+    {
+        chunk_positions = new List<intVector3>();
+        int chunk_grid_radius = (int)max_chunk_radius;
+
+        for (int x = -chunk_grid_radius; x < chunk_grid_radius; ++x)//creat all possible chunk positions
+        {
+            for (int z = -chunk_grid_radius; z < chunk_grid_radius; ++z)
+            {
+                chunk_positions.Add(new intVector3(x, 0, z));
+            }
+        }
+
+        chunk_positions = chunk_positions.OrderBy(pos => Vector3.Distance(intVector3.Zero, pos)).ToList();
     }
 
 
@@ -80,7 +65,7 @@ public class ChunkStreamer : MonoBehaviour
         if (update_list.Count != 0)//if there are chunks to build don't load more
             return;
 
-        for (int i = 0; i < chunk_positions.Length; ++i)//for every pre calculated chunk position
+        for (int i = 0; i < chunk_positions.Count; ++i)//for every pre calculated chunk position
         {
             //calculate chunk position
             intVector3 chunk_pos = new intVector3(chunk_positions[i].x * Chunk.chunk_size + player_position.x, 0,
@@ -188,7 +173,7 @@ public class ChunkStreamer : MonoBehaviour
             float distance = (new Vector3(_chunk.Value.voxel_world_position.x, 0, _chunk.Value.voxel_world_position.z) -
                             new Vector3(streamer.transform.position.x, 0, streamer.transform.position.z)).sqrMagnitude;//avoid square root
 
-            if (distance < view_distance * view_distance)
+            if (distance < unload_distance * unload_distance)
                 delete = false;
         }
 

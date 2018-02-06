@@ -15,9 +15,15 @@ public struct intVector3
     }
 
 
-    public Vector3 ToVector3()
+    public static implicit operator intVector3(Vector3 _vector)//allow vector3 assignment to intVector3
     {
-        return new Vector3(x, y, z);
+        return new intVector3((int)_vector.x, (int)_vector.y, (int)_vector.z);
+    }
+
+
+    public static implicit operator Vector3 (intVector3 _vector)//allow assignment to vector 3
+    {
+        return new Vector3(_vector.x, _vector.y, _vector.z);
     }
 
 
@@ -29,4 +35,9 @@ public struct intVector3
         intVector3 position = (intVector3)_object;//cast to world position
         return position.x == x && position.y == y && position.z == z;
     }
+
+
+    public static readonly intVector3 Zero = new intVector3(0, 0, 0);
+    public static readonly intVector3 Up = new intVector3(0, 1, 0);
+    public static readonly intVector3 Right = new intVector3(1, 0, 0);
 }

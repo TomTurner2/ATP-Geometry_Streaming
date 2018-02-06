@@ -134,7 +134,7 @@ public class Chunk : MonoBehaviour
     private void OnDrawGizmos()
     {
         float offset = chunk_size * 0.5f - 0.5f;
-        Gizmos.DrawWireCube(voxel_world_position.ToVector3() + Vector3.one * offset,
+        Gizmos.DrawWireCube(voxel_world_position + Vector3.one * offset,
             new Vector3(chunk_size, chunk_size, chunk_size));
     }
 }

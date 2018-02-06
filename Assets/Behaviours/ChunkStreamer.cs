@@ -10,12 +10,13 @@ public class ChunkStreamer : MonoBehaviour
     [SerializeField] uint max_chunk_y = 8;
     [SerializeField] uint max_chunks_built_per_frame = 2;
     [SerializeField] uint lazy_load = 32;
-        
+    
     private List<intVector3> update_list = new List<intVector3>();
     private List<intVector3> load_list = new List<intVector3>();
     private float unload_timer = 0;
 
-    static intVector3[] chunk_positions = {   new intVector3( 0, 0,  0), new intVector3(-1, 0,  0), new intVector3( 0, 0, -1), new intVector3( 0, 0,  1), new intVector3( 1, 0,  0),
+    private static List<ChunkStreamer> active_chunk_streamers = new List<ChunkStreamer>();
+    private static intVector3[] chunk_positions = {   new intVector3( 0, 0,  0), new intVector3(-1, 0,  0), new intVector3( 0, 0, -1), new intVector3( 0, 0,  1), new intVector3( 1, 0,  0),
         new intVector3(-1, 0, -1), new intVector3(-1, 0,  1), new intVector3( 1, 0, -1), new intVector3( 1, 0,  1), new intVector3(-2, 0,  0),
         new intVector3( 0, 0, -2), new intVector3( 0, 0,  2), new intVector3( 2, 0,  0), new intVector3(-2, 0, -1), new intVector3(-2, 0,  1),
         new intVector3(-1, 0, -2), new intVector3(-1, 0,  2), new intVector3( 1, 0, -2), new intVector3( 1, 0,  2), new intVector3( 2, 0, -1),
@@ -55,6 +56,11 @@ public class ChunkStreamer : MonoBehaviour
         new intVector3(-6, 0, -5), new intVector3(-6, 0,  5), new intVector3(-5, 0, -6), new intVector3(-5, 0,  6), new intVector3( 5, 0, -6),
         new intVector3( 5, 0,  6), new intVector3( 6, 0, -5), new intVector3( 6, 0,  5) };
 
+
+    private void Start()
+    {
+        active_chunk_streamers.Add(this);
+    }
 
 
     void Update()
@@ -96,7 +102,7 @@ public class ChunkStreamer : MonoBehaviour
 
         for (int y = -column_height; y < column_height; ++y)//load a column of chunks in this position
         {
-            for (int x = _chunk_pos.x - Chunk.chunk_size; x <= _chunk_pos.x + Chunk.chunk_size; x += Chunk.chunk_size)
+            for (int x = _chunk_pos.x - Chunk.chunk_size; x <= _chunk_pos.x + Chunk.chunk_size; x += Chunk.chunk_size)//add adjacent chunks as well so they get updated
             {
                 for (int z = _chunk_pos.z - Chunk.chunk_size; z <= _chunk_pos.z + Chunk.chunk_size; z += Chunk.chunk_size)
                 {
@@ -153,6 +159,7 @@ public class ChunkStreamer : MonoBehaviour
         if (unload_timer >= Mathf.Max(0, chunk_unload_delay))//unload after delay (min delay 0)
         {
             List<intVector3> chunks_to_unload = new List<intVector3>();
+            active_chunk_streamers.RemoveAll(streamer => streamer == null);
 
             foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
             {
@@ -172,10 +179,26 @@ public class ChunkStreamer : MonoBehaviour
 
     void TryScheduleForUnload(KeyValuePair<intVector3, Chunk> _chunk, List<intVector3> _chunks_to_unload)
     {
-        float distance = (new Vector3(_chunk.Value.voxel_world_position.x, 0, _chunk.Value.voxel_world_position.z) -
-            new Vector3(transform.position.x, 0, transform.position.z)).sqrMagnitude;//avoid square root
+        bool delete = true;
+        foreach (ChunkStreamer streamer in active_chunk_streamers)
+        {
+            if (!streamer.isActiveAndEnabled)
+                continue;
 
-        if (distance > view_distance * view_distance)
+            float distance = (new Vector3(_chunk.Value.voxel_world_position.x, 0, _chunk.Value.voxel_world_position.z) -
+                            new Vector3(streamer.transform.position.x, 0, streamer.transform.position.z)).sqrMagnitude;//avoid square root
+
+            if (distance < view_distance * view_distance)
+                delete = false;
+        }
+
+        if (delete)//if out of range of all active streamers delete the chunk
             _chunks_to_unload.Add(_chunk.Key);
+    }
+
+
+    private void OnDestroy()
+    {
+        active_chunk_streamers.Remove(this);
     }
 }

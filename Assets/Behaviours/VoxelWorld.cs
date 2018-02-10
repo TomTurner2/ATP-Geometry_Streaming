@@ -24,13 +24,13 @@ public class VoxelWorld : MonoBehaviour
 
 
     public void CreateChunk(int _x, int _y, int _z)
-    {
-        //the coordinates of chunk in the world
-        intVector3 voxel_world_position = new intVector3(_x, _y, _z);
+    {      
+        intVector3 voxel_world_position = new intVector3(_x, _y, _z);//the coordinates of chunk in the world
 
         GameObject chunk_object = Instantiate(chunk_prefab, new Vector3(voxel_world_position.x,
-            voxel_world_position.y, voxel_world_position.z),Quaternion.Euler(Vector3.zero));
+            voxel_world_position.y, voxel_world_position.z),Quaternion.Euler(Vector3.zero));//create chunk
 
+        //set chunk parameters
         Chunk chunk = chunk_object.GetComponent<Chunk>();
         chunk.voxel_world_position = voxel_world_position;
         chunk.voxel_world = this;
@@ -42,7 +42,7 @@ public class VoxelWorld : MonoBehaviour
         chunk = terrain_generator.GenerateChunk(chunk);
 
         chunk.SetVoxelsUnEdited();
-        Serialization.Load(chunk);
+        VoxelWorldSaver.Load(chunk);
     }
 
 
@@ -52,7 +52,7 @@ public class VoxelWorld : MonoBehaviour
         if (!chunks.TryGetValue(new intVector3(_x, _y, _z), out chunk))//if not in dictionary leave
             return;
 
-        Serialization.SaveChunk(chunk);//save chunk
+        VoxelWorldSaver.SaveChunk(chunk);//save chunk
         Destroy(chunk.gameObject);//destroy chunk
         chunks.Remove(new intVector3(_x, _y, _z));//remove entry from dictionary
     }
@@ -74,7 +74,7 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
-    public Voxel GetBlock(int _x, int _y, int _z)
+    public Voxel GetVoxel(int _x, int _y, int _z)
     {
         Chunk chunk = GetChunk(_x, _y, _z);
 
@@ -88,14 +88,15 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
-    public void SetBlock(int _x, int _y, int _z, Voxel _voxel)
+    public void SetVoxel(int _x, int _y, int _z, Voxel _voxel)
     {
         Chunk chunk = GetChunk(_x, _y, _z);
 
         if (chunk == null)
             return;
 
-        intVector3 voxel_chunk_pos = new intVector3(_x - chunk.voxel_world_position.x, _y - chunk.voxel_world_position.y, _z - chunk.voxel_world_position.z);
+        intVector3 voxel_chunk_pos = new intVector3(_x - chunk.voxel_world_position.x,
+            _y - chunk.voxel_world_position.y, _z - chunk.voxel_world_position.z);
 
         chunk.SetVoxel(voxel_chunk_pos.x, voxel_chunk_pos.y, voxel_chunk_pos.z, _voxel);
         chunk.edited = true;

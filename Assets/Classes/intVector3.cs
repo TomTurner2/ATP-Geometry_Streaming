@@ -17,7 +17,7 @@ public struct intVector3
 
     public static implicit operator intVector3(Vector3 _vector)//allow vector3 assignment to intVector3
     {
-        return new intVector3((int)_vector.x, (int)_vector.y, (int)_vector.z);
+        return new intVector3(Mathf.RoundToInt(_vector.x), Mathf.RoundToInt(_vector.y), Mathf.RoundToInt(_vector.z));
     }
 
 

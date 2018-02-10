@@ -26,7 +26,6 @@ public class ChunkStreamer : MonoBehaviour
         if (chunk_positions == null)
             GenerateStaticChunkPositions();
 
-
         active_chunk_streamers.Add(this);
     }
 
@@ -36,7 +35,7 @@ public class ChunkStreamer : MonoBehaviour
         chunk_positions = new List<intVector3>();
         int chunk_grid_radius = (int)max_chunk_radius;
 
-        for (int x = -chunk_grid_radius; x < chunk_grid_radius; ++x)//creat all possible chunk positions
+        for (int x = -chunk_grid_radius; x < chunk_grid_radius; ++x)//create all possible chunk positions
         {
             for (int z = -chunk_grid_radius; z < chunk_grid_radius; ++z)
             {
@@ -122,10 +121,11 @@ public class ChunkStreamer : MonoBehaviour
 
         for (int i = 0; i < update_list.Count; ++i)
         {
-            Chunk chunk = voxel_world.GetChunk(update_list[0].x, update_list[0].y, update_list[0].z);
+            Chunk chunk = voxel_world.GetChunk(update_list[0].x,
+                update_list[0].y, update_list[0].z);//try and get chunk
 
             if (chunk != null)
-                chunk.edited = true;
+                chunk.edited = true;//set it to update its mesh
 
             update_list.RemoveAt(0);
         }
@@ -144,7 +144,6 @@ public class ChunkStreamer : MonoBehaviour
         if (unload_timer >= Mathf.Max(0, chunk_unload_delay))//unload after delay (min delay 0)
         {
             List<intVector3> chunks_to_unload = new List<intVector3>();
-            active_chunk_streamers.RemoveAll(streamer => streamer == null);
 
             foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
             {
@@ -164,7 +163,7 @@ public class ChunkStreamer : MonoBehaviour
 
     void TryScheduleForUnload(KeyValuePair<intVector3, Chunk> _chunk, List<intVector3> _chunks_to_unload)
     {
-        bool delete = true;
+        bool unload = true;
         foreach (ChunkStreamer streamer in active_chunk_streamers)
         {
             if (!streamer.isActiveAndEnabled)
@@ -174,10 +173,10 @@ public class ChunkStreamer : MonoBehaviour
                             new Vector3(streamer.transform.position.x, 0, streamer.transform.position.z)).sqrMagnitude;//avoid square root
 
             if (distance < unload_distance * unload_distance)
-                delete = false;
+                unload = false;
         }
 
-        if (delete)//if out of range of all active streamers delete the chunk
+        if (unload)//if out of range of all active streamers schedule the chunk
             _chunks_to_unload.Add(_chunk.Key);
     }
 

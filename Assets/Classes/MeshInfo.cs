@@ -21,14 +21,6 @@ public class MeshInfo
     }
 
 
-    public void AddIndice(int _indice)
-    {
-        indices.Add(_indice);
-        if (collider_from_mesh)
-            collider_indices.Add(_indice - (vertices.Count - collider_vertices.Count));//adjust to match vert indexs
-    }
-
-
     public void AddFaceIndices()
     {
         indices.Add(vertices.Count - 4);

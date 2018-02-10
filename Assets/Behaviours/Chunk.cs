@@ -42,7 +42,7 @@ public class Chunk : MonoBehaviour
         if (VoxelInChunk(_x, _y, _z))//if voxel is in this chunk return it
             return voxels[_x, _y, _z];
 
-        return voxel_world.GetBlock(voxel_world_position.x + _x, voxel_world_position.y +
+        return voxel_world.GetVoxel(voxel_world_position.x + _x, voxel_world_position.y +
             _y, voxel_world_position.z + _z);//if voxel not in chunk find it through world
     }
 
@@ -64,12 +64,13 @@ public class Chunk : MonoBehaviour
         if (VoxelInChunk(_x, _y, _z))//if in chunk
         {
             voxels[_x, _y, _z] = _voxel;//set voxel
+            return;
         }
-        else
-        {
-            voxel_world.SetBlock(voxel_world_position.x + _x, voxel_world_position.y +
-                _y, voxel_world_position.z + _z, _voxel);//if not in chunk set voxel through world
-        }
+
+        //else
+        voxel_world.SetVoxel(voxel_world_position.x + _x, voxel_world_position.y +
+            _y, voxel_world_position.z + _z, _voxel);//if not in chunk set voxel through world
+
     }
 
 

@@ -30,7 +30,7 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void GenerateStaticChunkPositions()
+    private void GenerateStaticChunkPositions()
     {
         chunk_positions = new List<intVector3>();
         int chunk_grid_radius = (int)max_chunk_radius;
@@ -47,7 +47,7 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void Update()
+    private void Update()
     {
         if (UnloadChunks())//if unloading chunks don't try to load more this frame
             return;
@@ -57,7 +57,7 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void FindChunksToLoad()
+    private void FindChunksToLoad()
     {
         intVector3 player_position = VoxelWorld.PositionToWorldPosition(transform.position);
 
@@ -80,7 +80,7 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void AddChunkPositionsToLoadLists(intVector3 _chunk_pos)
+    private void AddChunkPositionsToLoadLists(intVector3 _chunk_pos)
     {
         int column_height = Mathf.FloorToInt(max_chunk_y * 0.5f);
 
@@ -104,7 +104,7 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void LoadAndUpdateChunks()
+    private void LoadAndUpdateChunks()
     {
         if (load_list.Count != 0)
         {
@@ -132,14 +132,14 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void LoadChunk(intVector3 _position)
+    private void LoadChunk(intVector3 _position)
     {
         if (voxel_world.GetChunk(_position.x, _position.y, _position.z) == null)
             voxel_world.CreateChunk(_position.x, _position.y, _position.z);
     }
 
 
-    bool UnloadChunks()
+    private bool UnloadChunks()
     {
         if (unload_timer >= Mathf.Max(0, chunk_unload_delay))//unload after delay (min delay 0)
         {
@@ -161,7 +161,7 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    void TryScheduleForUnload(KeyValuePair<intVector3, Chunk> _chunk, List<intVector3> _chunks_to_unload)
+    private void TryScheduleForUnload(KeyValuePair<intVector3, Chunk> _chunk, List<intVector3> _chunks_to_unload)
     {
         bool unload = true;
         foreach (ChunkStreamer streamer in active_chunk_streamers)

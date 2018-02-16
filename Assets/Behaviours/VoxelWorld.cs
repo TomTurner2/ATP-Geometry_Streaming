@@ -23,6 +23,13 @@ public class VoxelWorld : MonoBehaviour
     [SerializeField] TerrainGenerator terrain_generator = new TerrainGenerator();
 
 
+    private void Start()
+    {
+        save_name = GameInfo.WorldName;//get chosen world name
+ 
+    }
+
+
     public void CreateChunk(int _x, int _y, int _z)
     {      
         intVector3 voxel_world_position = new intVector3(_x, _y, _z);//the coordinates of chunk in the world
@@ -127,5 +134,20 @@ public class VoxelWorld : MonoBehaviour
         return new intVector3(Mathf.FloorToInt(_position.x / Chunk.chunk_size) * Chunk.chunk_size,
             Mathf.FloorToInt(_position.y / Chunk.chunk_size) * Chunk.chunk_size,
             Mathf.FloorToInt(_position.z / Chunk.chunk_size) * Chunk.chunk_size);//snaps position to int
+    }
+
+
+    public void SaveWorld()
+    {
+        foreach (KeyValuePair<intVector3, Chunk> chunk in chunks)
+        {
+            VoxelWorldSaver.SaveChunk(chunk.Value);//save chunk
+        }
+    }
+
+
+    private void OnDestroy()
+    {
+        SaveWorld();
     }
 }

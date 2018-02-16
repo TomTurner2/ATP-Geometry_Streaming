@@ -11,6 +11,30 @@ public static class VoxelWorldSaver
 {
     public static string save_folder_name = "WorldSaves";
 
+
+    public static string[] GetAllWorldSaves()
+    {
+        string path = save_folder_name + "/";
+        string[] saves = Directory.GetDirectories(path);
+
+        for (int i =0; i < saves.Length; ++i)
+        {
+            saves[i] = saves[i].Remove(0, path.Length);//remove directory from string
+        }
+
+        return saves;
+    }
+
+
+    public static void DeleteSave(string _world_name)
+    {
+        string save_location = save_folder_name + "/" + _world_name + "/";
+
+        if (Directory.Exists(save_location))
+            Directory.Delete(save_location, true);
+    }
+
+
     public static string GetSaveLocation(string _world_name)
     {
         string save_location = save_folder_name + "/" + _world_name + "/";

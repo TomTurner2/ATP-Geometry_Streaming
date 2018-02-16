@@ -19,7 +19,7 @@ public class VoxelGrass : Voxel
                 tile_texture.y = 0;
                 return tile_texture;
         }
-        tile_texture.x = 1;//changed from 3
+        tile_texture.x = 3;
         tile_texture.y = 0;
         return tile_texture;
     }

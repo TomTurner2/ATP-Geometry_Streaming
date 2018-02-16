@@ -15,6 +15,12 @@ public class PlayerController : MonoBehaviour
     private bool jumping = false;
 
 
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+
     void Update()
     {
         DetectFlying();
@@ -57,7 +63,7 @@ public class PlayerController : MonoBehaviour
 
     private void CameraRotation()
     {
-        if (camera_target == null)
+        if (camera_target == null || Cursor.lockState == CursorLockMode.None)
             return;
 
         float x_rotation = rotation.x + Input.GetAxis("Mouse X") * rotation_speed;

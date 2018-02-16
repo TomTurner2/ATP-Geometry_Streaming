@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -29,7 +30,6 @@ public class MainMenuController : MonoBehaviour
     }
 
 
-
     public void SetWorldName(string _name)
     {
         GameInfo.WorldName = _name;
@@ -43,4 +43,15 @@ public class MainMenuController : MonoBehaviour
 
         SceneManager.LoadScene(1);
     }
+
+
+    public void Quit()
+    {
+        Application.Quit();
+
+#if UNITY_EDITOR
+        EditorApplication.isPlaying = false;
+#endif
+    }
+
 }

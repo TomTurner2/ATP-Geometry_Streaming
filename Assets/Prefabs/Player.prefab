@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 124698806506123450}
   - component: {fileID: 81257459944475404}
   - component: {fileID: 114835436877641406}
+  - component: {fileID: 114747612613335908}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -69,14 +70,14 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1507493959942878}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 20, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4228970961935274}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!20 &20300416136118472
 Camera:
   m_ObjectHideFlags: 1
@@ -120,7 +121,7 @@ Rigidbody:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1507493959942878}
   serializedVersion: 2
-  m_Mass: 10
+  m_Mass: 50
   m_Drag: 1
   m_AngularDrag: 0.05
   m_UseGravity: 1
@@ -159,6 +160,18 @@ MonoBehaviour:
   max_chunk_y: 8
   max_chunk_radius: 6
   max_chunks_built_per_frame: 8
+--- !u!114 &114747612613335908
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1378438395962852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bce797957f47d2349a2f9fa2431ba4cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactor: {fileID: 114835436877641406}
 --- !u!114 &114835436877641406
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -170,7 +183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec2aa3a0ed1e3074c947c7ccd6d44573, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  max_edit_distance: 100
+  max_edit_distance: 50
 --- !u!114 &114966954851874938
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -184,7 +197,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   move_speed: 7
   rotation_speed: 3
-  jump_force: 5
+  sprint_multiplier: 2
+  jump_force: 7
   rigidbody: {fileID: 54818991310586536}
   camera_target: {fileID: 20300416136118472}
 --- !u!124 &124698806506123450

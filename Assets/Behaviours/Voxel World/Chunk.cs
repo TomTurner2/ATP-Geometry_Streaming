@@ -9,7 +9,7 @@ using UnityEngine;
 public class Chunk : MonoBehaviour
 {
     public static int chunk_size = 16;
-    public Voxel[,,] voxels = new Voxel[chunk_size, chunk_size, chunk_size];
+    public Voxel[] voxels = new Voxel[chunk_size * chunk_size *chunk_size];
     public VoxelWorld voxel_world;
     public intVector3 voxel_world_position;
     public bool edited = false;//also used to determine if chunk needs updating
@@ -17,6 +17,12 @@ public class Chunk : MonoBehaviour
 
     private MeshFilter mesh_filter;
     private MeshCollider mesh_collider;
+
+
+    public static int GetIndex(int _x, int _y, int _z)
+    {
+        return _x + chunk_size * (_y + chunk_size * _z);
+    }
 
 
     void Start()
@@ -40,7 +46,7 @@ public class Chunk : MonoBehaviour
     public Voxel GetVoxel(int _x, int _y, int _z)
     {
         if (VoxelInChunk(_x, _y, _z))//if voxel is in this chunk return it
-            return voxels[_x, _y, _z];
+            return voxels[GetIndex(_x,_y,_z)];
 
         return voxel_world.GetVoxel(voxel_world_position.x + _x, voxel_world_position.y +
             _y, voxel_world_position.z + _z);//if voxel not in chunk find it through world
@@ -63,7 +69,7 @@ public class Chunk : MonoBehaviour
     {
         if (VoxelInChunk(_x, _y, _z))//if in chunk
         {
-            voxels[_x, _y, _z] = _voxel;//set voxel
+            voxels[GetIndex(_x, _y, _z)] = _voxel;//set voxel
             return;
         }
 
@@ -85,7 +91,7 @@ public class Chunk : MonoBehaviour
             {
                 for (int z = 0; z < chunk_size; z++)
                 {
-                    mesh_info = voxels[x, y, z].GetVoxelMeshInfo(this, x, y, z, mesh_info);//Get voxels mesh info
+                    mesh_info = voxels[GetIndex(x, y, z)].GetVoxelMeshInfo(this, x, y, z, mesh_info);//Get voxels mesh info
                 }
             }
         }

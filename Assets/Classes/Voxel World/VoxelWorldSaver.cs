@@ -83,9 +83,9 @@ public static class VoxelWorldSaver
         FileStream stream = new FileStream(save_file, FileMode.Open);//open file
         ChunkSave chunk_save = (ChunkSave)formatter.Deserialize(stream);//unserialise file into chunk save
 
-        foreach (KeyValuePair<intVector3, Voxel> voxel in chunk_save.voxels)
+        foreach (KeyValuePair<int, Voxel> voxel in chunk_save.voxels)
         {
-            _chunk.voxels[voxel.Key.x, voxel.Key.y, voxel.Key.z] = voxel.Value;
+            _chunk.voxels[voxel.Key] = voxel.Value;
         }
 
         stream.Close();//close file stream

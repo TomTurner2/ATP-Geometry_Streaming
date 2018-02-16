@@ -7,7 +7,7 @@ using System;
 [Serializable]//make this class saveable
 public class ChunkSave
 {
-    public Dictionary<intVector3, Voxel> voxels = new Dictionary<intVector3, Voxel>();//voxels stored in dictionary by coordinates
+    public Dictionary<int, Voxel> voxels = new Dictionary<int, Voxel>();//voxels stored in dictionary by coordinates
 
     public ChunkSave(Chunk _chunk)
     {
@@ -17,10 +17,11 @@ public class ChunkSave
             {
                 for (int z = 0; z < Chunk.chunk_size; ++z)
                 {
-                    if (!_chunk.voxels[x, y, z].edited)//if the voxel wasn't edited, ignore it
+                    int index = Chunk.GetIndex(x, y, z);
+                    if (!_chunk.voxels[index].edited)//if the voxel wasn't edited, ignore it
                         continue;
 
-                    voxels.Add(new intVector3(x, y, z), _chunk.voxels[x, y, z]);//add edited voxel
+                    voxels.Add(index, _chunk.voxels[index]);//add edited voxel
                 }
             }
         }

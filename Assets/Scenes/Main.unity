@@ -1080,7 +1080,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4471565334897320, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 4471565334897320, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
       propertyPath: m_LocalRotation.z
@@ -1088,7 +1088,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4471565334897320, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 4471565334897320, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
       propertyPath: m_RootOrder
@@ -1099,16 +1099,6 @@ Prefab:
       propertyPath: voxel_world
       value: 
       objectReference: {fileID: 1088050180}
-    - target: {fileID: 114966954851874938, guid: 6dc65ff13982b6942b2ac5017eb8a055,
-        type: 2}
-      propertyPath: jump_force
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 54818991310586536, guid: 6dc65ff13982b6942b2ac5017eb8a055,
-        type: 2}
-      propertyPath: m_Mass
-      value: 50
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
   m_IsPrefabParent: 0

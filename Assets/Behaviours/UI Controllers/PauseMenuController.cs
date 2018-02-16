@@ -40,5 +40,4 @@ public class PauseMenuController : MonoBehaviour
         }
     }
 
-
 }

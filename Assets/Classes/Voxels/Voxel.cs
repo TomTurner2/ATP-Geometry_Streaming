@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 
+
 [Serializable]
 public class Voxel
 {
@@ -59,14 +60,12 @@ public class Voxel
 
     public virtual MeshInfo GetVoxelMeshInfo (Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
     {
-        _mesh_info.collider_from_mesh = true;//by default create collider from mesh
-
         switch (_chunk.voxel_world.mesh_generation_type)
         {
             case MeshGenerationType.NAIVE_CUBES:
                 return NaiveCube(_chunk, _x, _y, _z, _mesh_info);
             case MeshGenerationType.CUBES:
-                return Cubes(_x, _y, _z, _mesh_info);
+                return Cubes(_chunk, _x, _y, _z, _mesh_info);
             case MeshGenerationType.MARCHING_CUBES:
                 break;
             default:
@@ -77,7 +76,7 @@ public class Voxel
     }
 
 
-    private MeshInfo Cubes(int _x, int _y, int _z, MeshInfo _mesh_info)
+    private MeshInfo Cubes(Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
     {
         _mesh_info = CreateTopFace(_x, _y, _z, _mesh_info);
         _mesh_info = CreateBottomFace(_x, _y, _z, _mesh_info);
@@ -93,25 +92,32 @@ public class Voxel
     private MeshInfo NaiveCube(Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
     {
         //determine face to create based on adjacency
-        if (!_chunk.GetVoxel(_x, _y + 1, _z).IsSolid())
+        if (ShouldMakeFace(_chunk, _x, _y + 1, _z))
             _mesh_info = CreateTopFace(_x, _y, _z, _mesh_info);
 
-        if (!_chunk.GetVoxel(_x, _y - 1, _z).IsSolid())
+        if (ShouldMakeFace(_chunk, _x, _y - 1, _z))
             _mesh_info = CreateBottomFace(_x, _y, _z, _mesh_info);
 
-        if (!_chunk.GetVoxel(_x, _y, _z + 1).IsSolid())
+        if (ShouldMakeFace(_chunk, _x, _y, _z + 1))
             _mesh_info = CreateBackFace(_x, _y, _z, _mesh_info);
 
-        if (!_chunk.GetVoxel(_x, _y, _z - 1).IsSolid())
+        if (ShouldMakeFace(_chunk, _x, _y, _z - 1))
             _mesh_info = CreateFrontFace(_x, _y, _z, _mesh_info);
 
-        if (!_chunk.GetVoxel(_x + 1, _y, _z).IsSolid())
+        if (ShouldMakeFace(_chunk, _x + 1, _y, _z))
             _mesh_info = CreateRightFace(_x, _y, _z, _mesh_info);
 
-        if (!_chunk.GetVoxel(_x - 1, _y, _z).IsSolid())
+        if (ShouldMakeFace(_chunk, _x - 1, _y, _z))
             _mesh_info = CreateLeftFace(_x, _y, _z, _mesh_info);
 
         return _mesh_info;
+    }
+
+
+    bool ShouldMakeFace(Chunk _chunk, int _x, int _y, int _z)
+    {
+        Voxel voxel = _chunk.GetVoxel(_x, _y, _z);
+        return (!voxel.IsSolid() || voxel.HasCustomMesh());
     }
 
 
@@ -123,7 +129,10 @@ public class Voxel
         _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z - 0.5f));
 
         _mesh_info.AddFaceIndices();
-        _mesh_info.uvs.AddRange(GetFaceUVs(Direction.TOP));//add top uvs
+
+        if (!_mesh_info.collider_only)
+            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.TOP));//add top uvs
+
         return _mesh_info;
     }
 
@@ -136,7 +145,10 @@ public class Voxel
         _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z + 0.5f));
 
         _mesh_info.AddFaceIndices();
-        _mesh_info.uvs.AddRange(GetFaceUVs(Direction.BOTTOM));
+
+        if (!_mesh_info.collider_only)
+            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.BOTTOM));
+
         return _mesh_info;
     }
 
@@ -149,7 +161,10 @@ public class Voxel
         _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z + 0.5f));
 
         _mesh_info.AddFaceIndices();
-        _mesh_info.uvs.AddRange(GetFaceUVs(Direction.BACK));
+
+        if (!_mesh_info.collider_only)
+            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.BACK));
+
         return _mesh_info;
     }
 
@@ -162,7 +177,10 @@ public class Voxel
         _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z + 0.5f));
 
         _mesh_info.AddFaceIndices();
-        _mesh_info.uvs.AddRange(GetFaceUVs(Direction.RIGHT));
+
+        if (!_mesh_info.collider_only)
+            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.RIGHT));
+
         return _mesh_info;
     }
 
@@ -175,7 +193,10 @@ public class Voxel
         _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z - 0.5f));
 
         _mesh_info.AddFaceIndices();
-        _mesh_info.uvs.AddRange(GetFaceUVs(Direction.FRONT));
+
+        if (!_mesh_info.collider_only)
+            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.FRONT));
+
         return _mesh_info;
     }
 
@@ -188,7 +209,10 @@ public class Voxel
         _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z - 0.5f));
 
         _mesh_info.AddFaceIndices();
-        _mesh_info.uvs.AddRange(GetFaceUVs(Direction.LEFT));
+
+        if (!_mesh_info.collider_only)
+            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.LEFT));
+
         return _mesh_info;
     }
 
@@ -197,4 +221,17 @@ public class Voxel
     {
         return true;//solid by default
     }
+
+
+    public virtual bool HasCustomMesh()
+    {
+        return false;
+    }
+
+
+    public virtual GameObject OnDestroy()
+    {
+        return null;
+    }
+
 }

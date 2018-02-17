@@ -6,7 +6,6 @@ public class PlayerInventory : MonoBehaviour
 {
     [SerializeField] TerrainInteractor interactor = null;
 
-    private Voxel equiped_block;
     private Dictionary<KeyCode, Voxel> hot_bar = new Dictionary<KeyCode, Voxel>()//link keys to a block
     {
         { KeyCode.Alpha1, new VoxelStone() },
@@ -15,7 +14,8 @@ public class PlayerInventory : MonoBehaviour
         { KeyCode.Alpha4, new VoxelWoodPlanks() },
         { KeyCode.Alpha5, new VoxelGlassPanel() },
         { KeyCode.Alpha6, new VoxelWoodLog() },
-        { KeyCode.Alpha7, new VoxelBlueWool() }
+        { KeyCode.Alpha7, new VoxelBlueWool() },
+        { KeyCode.Alpha8, new VoxelChair() }
     };
 
 

@@ -26,7 +26,6 @@ public class VoxelWorld : MonoBehaviour
     private void Start()
     {
         save_name = GameInfo.WorldName;//get chosen world name
- 
     }
 
 

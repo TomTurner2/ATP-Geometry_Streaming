@@ -21,9 +21,15 @@ public struct intVector3
     }
 
 
-    public static implicit operator Vector3 (intVector3 _vector)//allow assignment to vector 3
+    public static implicit operator Vector3(intVector3 _vector)//allow assignment to vector 3
     {
         return new Vector3(_vector.x, _vector.y, _vector.z);
+    }
+
+
+    public static intVector3 operator +(intVector3 _vector_lhs, intVector3 _vector_rhs)
+    {
+        return new intVector3(_vector_lhs.x + _vector_rhs.x, _vector_lhs.y + _vector_rhs.y, _vector_lhs.z + _vector_rhs.z);
     }
 
 
@@ -38,6 +44,7 @@ public struct intVector3
 
 
     public static readonly intVector3 Zero = new intVector3(0, 0, 0);
+    public static readonly intVector3 One = new intVector3(1, 1, 1);
     public static readonly intVector3 Up = new intVector3(0, 1, 0);
     public static readonly intVector3 Right = new intVector3(1, 0, 0);
 }

@@ -29,7 +29,6 @@ public class Chunk : MonoBehaviour
     {
         mesh_filter = gameObject.GetComponent<MeshFilter>();
         mesh_collider = gameObject.GetComponent<MeshCollider>();
-
     }
 
 
@@ -69,14 +68,13 @@ public class Chunk : MonoBehaviour
     {
         if (VoxelInChunk(_x, _y, _z))//if in chunk
         {
+            Destroy(voxels[GetIndex(_x, _y, _z)].OnDestroy());
             voxels[GetIndex(_x, _y, _z)] = _voxel;//set voxel
             return;
         }
 
-        //else
         voxel_world.SetVoxel(voxel_world_position.x + _x, voxel_world_position.y +
             _y, voxel_world_position.z + _z, _voxel);//if not in chunk set voxel through world
-
     }
 
 
@@ -85,11 +83,11 @@ public class Chunk : MonoBehaviour
         rendered = true;
 
         MeshInfo mesh_info = new MeshInfo();
-        for (int x = 0; x < chunk_size; x++)
+        for (int x = 0; x < chunk_size; ++x)
         {
-            for (int y = 0; y < chunk_size; y++)
+            for (int y = 0; y < chunk_size; ++y)
             {
-                for (int z = 0; z < chunk_size; z++)
+                for (int z = 0; z < chunk_size; ++z)
                 {
                     mesh_info = voxels[GetIndex(x, y, z)].GetVoxelMeshInfo(this, x, y, z, mesh_info);//Get voxels mesh info
                 }
@@ -138,10 +136,21 @@ public class Chunk : MonoBehaviour
     }
 
 
+    private void OnDestroy()
+    {
+        foreach (Voxel voxel in voxels)
+        {
+            GameObject mesh = voxel.OnDestroy();
+            if (mesh != null)
+                Destroy(mesh);
+        }
+    }
+
+
     private void OnDrawGizmos()
     {
         float offset = chunk_size * 0.5f - 0.5f;
-        Gizmos.DrawWireCube(voxel_world_position + Vector3.one * offset,
+        Gizmos.DrawWireCube((Vector3)(voxel_world_position + intVector3.One) * offset,
             new Vector3(chunk_size, chunk_size, chunk_size));
     }
 }

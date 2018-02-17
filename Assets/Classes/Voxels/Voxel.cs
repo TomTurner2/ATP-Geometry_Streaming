@@ -6,6 +6,19 @@ using System;
 [Serializable]
 public class Voxel
 {
+    enum VoxelType//unfortunately needed to determine type to create 
+    {
+        STONE,
+        GRASS,
+        STONEBRICK,
+        WOODPLANKS,
+        GLASSPANNEL,
+        WOODLOG,
+        BLUEWOOL,
+        VOXELCHAIR,
+    }
+
+
     public enum Direction
     {
         BACK,
@@ -232,6 +245,12 @@ public class Voxel
     public virtual GameObject OnDestroy()
     {
         return null;
+    }
+
+
+    public virtual Voxel Clone()
+    {
+        return this;
     }
 
 }

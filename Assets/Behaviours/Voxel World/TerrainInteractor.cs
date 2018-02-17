@@ -39,7 +39,7 @@ public class TerrainInteractor : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, max_edit_distance))
         {
-            Terraformer.SetVoxel(hit, block_to_place, true);//place in adjacent
+            Terraformer.SetVoxel(hit, block_to_place.Clone(), true);//place in adjacent
         }
     }
 

@@ -18,8 +18,11 @@ public class VoxelChair : Voxel
         if (chair_mesh_prefab == null)
             chair_mesh_prefab = MeshManager.instance.GetMeshPrefabByName("Chair");
 
-        mesh_instance = GameObject.Instantiate(chair_mesh_prefab, _chunk.transform);
-        mesh_instance.transform.position = _chunk.voxel_world_position + new intVector3(_x, _y, _z);
+        if (mesh_instance == null)
+        {
+            mesh_instance = GameObject.Instantiate(chair_mesh_prefab, _chunk.transform);
+            mesh_instance.transform.position = _chunk.voxel_world_position + new intVector3(_x, _y, _z);
+        }
 
         return _mesh_info;
     }
@@ -40,6 +43,12 @@ public class VoxelChair : Voxel
     public override bool HasCustomMesh()
     {
         return true;
+    }
+
+
+    public override Voxel Clone()
+    {
+        return new VoxelChair();//this should always be a unique instance
     }
 
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ public class PlayerInventory : MonoBehaviour
     };
 
 
-	void Update ()
+    void Update ()
     {
         if (interactor == null)
             return;
@@ -29,5 +30,5 @@ public class PlayerInventory : MonoBehaviour
             if (Input.GetKeyDown(hot_bar_item.Key))
                 interactor.BlockToPlace = hot_bar_item.Value;
         }
-	}
+    }
 }

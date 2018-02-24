@@ -25,7 +25,7 @@ public class PlayerInventory : MonoBehaviour
         if (interactor == null)
             return;
 
-        foreach (KeyValuePair<KeyCode, Voxel> hot_bar_item in hot_bar)//not the most efficent, but expandable
+        foreach (KeyValuePair<KeyCode, Voxel> hot_bar_item in hot_bar)
         {
             if (Input.GetKeyDown(hot_bar_item.Key))
                 interactor.BlockToPlace = hot_bar_item.Value;

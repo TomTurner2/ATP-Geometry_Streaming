@@ -33,6 +33,9 @@ public class VoxelWorld : MonoBehaviour
     {      
         intVector3 voxel_world_position = new intVector3(_x, _y, _z);//the coordinates of chunk in the world
 
+        if (chunks.ContainsKey(voxel_world_position))
+            return;
+
         GameObject chunk_object = Instantiate(chunk_prefab, new Vector3(voxel_world_position.x,
             voxel_world_position.y, voxel_world_position.z),Quaternion.Euler(Vector3.zero));//create chunk
 

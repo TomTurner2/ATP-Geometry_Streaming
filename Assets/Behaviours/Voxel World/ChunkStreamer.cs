@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class ChunkStreamer : MonoBehaviour
@@ -12,10 +12,14 @@ public class ChunkStreamer : MonoBehaviour
     [SerializeField] uint max_chunk_y = 8;
     [SerializeField] uint max_chunk_radius = 8;
     [SerializeField] uint max_chunks_built_per_frame = 2;
+    [SerializeField] bool multithreading = true;
     
     private List<intVector3> update_list = new List<intVector3>();
     private List<intVector3> load_list = new List<intVector3>();
     private float unload_timer = 0;
+
+    private ThreadManager thread_manager = new ThreadManager();
+    intVector3 current_world_position;
 
     private static List<intVector3> chunk_positions = null;
     private static List<ChunkStreamer> active_chunk_streamers = new List<ChunkStreamer>();
@@ -27,6 +31,19 @@ public class ChunkStreamer : MonoBehaviour
             GenerateStaticChunkPositions();
 
         active_chunk_streamers.Add(this);
+    }
+
+
+    private void OnDisable()
+    {
+        active_chunk_streamers.Remove(this);
+    }
+
+
+    private void OnEnable()
+    {
+        if (!active_chunk_streamers.Contains(this))
+            active_chunk_streamers.Add(this);
     }
 
 
@@ -43,11 +60,75 @@ public class ChunkStreamer : MonoBehaviour
             }
         }
 
-        chunk_positions = chunk_positions.OrderBy(pos => Vector3.Distance(intVector3.Zero, pos)).ToList();
+        chunk_positions = chunk_positions.OrderBy(pos => Vector3.Distance(intVector3.Zero, pos)).ToList();//order by closeness to centre 0, 0
     }
 
 
     private void Update()
+    {   
+        current_world_position = VoxelWorld.PositionToWorldPosition(transform.position);
+        if (multithreading)
+        {
+            ThreadedUpdate();
+            return;
+        }
+
+        RegularUpdate();
+    }
+
+
+    void ThreadedUpdate()
+    {
+        current_world_position = transform.position;
+        List<Vector3> streamer_pos = GetActiveStreamerPositions();
+
+        thread_manager.StartThreadedJob(() =>{UnloadChunksThreadSafe(streamer_pos);});
+        thread_manager.StartThreadedJob(()=>
+        {
+            FindChunksToLoad();
+            LoadAndUpdateThreadSafe();
+        });
+        thread_manager.Update();//bottleneck
+    }
+
+
+    void LoadAndUpdateThreadSafe()
+    {
+        if (load_list.Count != 0)
+        {
+            for (int i = 0; i < load_list.Count; ++i)
+            {
+                intVector3 temp = load_list[0];
+                thread_manager.QueueForMainThread(()=>
+                {
+                    LoadChunk(voxel_world, temp);
+                });
+               
+                load_list.RemoveAt(0);//index 0 as entries are removed
+            }
+        }
+
+        if (update_list.Count == 0)
+            return;
+
+        for (int i = 0; i < update_list.Count; ++i)
+        {
+            intVector3 temp = update_list[0];
+            thread_manager.QueueForMainThread(() =>
+            {
+                Chunk chunk = voxel_world.GetChunk(temp.x,
+                temp.y, temp.z);//try and get chunk
+
+                if (chunk != null)
+                    chunk.edited = true;//set it to update its mesh
+            });
+
+            update_list.RemoveAt(0);
+        }
+    }
+
+
+    void RegularUpdate()
     {
         if (UnloadChunks())//if unloading chunks don't try to load more this frame
             return;
@@ -59,29 +140,29 @@ public class ChunkStreamer : MonoBehaviour
 
     private void FindChunksToLoad()
     {
-        intVector3 player_position = VoxelWorld.PositionToWorldPosition(transform.position);
-
         if (update_list.Count != 0)//if there are chunks to build don't load more
             return;
 
         for (int i = 0; i < chunk_positions.Count; ++i)//for every pre calculated chunk position
         {
             //calculate chunk position
-            intVector3 chunk_pos = new intVector3(chunk_positions[i].x * Chunk.chunk_size + player_position.x, 0,
-                chunk_positions[i].z * Chunk.chunk_size + player_position.z);//offset array pos to players pos then convert to chunk pos
-
-                Chunk chunk = voxel_world.GetChunk(chunk_pos.x, chunk_pos.y, chunk_pos.z);//try find chunk at position        
+            intVector3 chunk_pos = new intVector3(chunk_positions[i].x * Chunk.chunk_size + current_world_position.x, 0,
+                chunk_positions[i].z * Chunk.chunk_size + current_world_position.z);//offset array pos to players pos then convert to chunk pos
+   
+            Chunk chunk = voxel_world.GetChunk(chunk_pos.x, chunk_pos.y, chunk_pos.z);//try find chunk at position        
             if (ChunkScheduled(chunk, chunk_pos))//if chunk is already loaded or scheduled to build, skip it
                 continue;
-       
+
             AddChunkPositionsToLoadLists(chunk_pos);
+
             return;
         }
+        
     }
 
 
     private void AddChunkPositionsToLoadLists(intVector3 _chunk_pos)
-    {
+    {   
         int column_height = Mathf.FloorToInt(max_chunk_y * 0.5f);
 
         for (int y = -column_height; y < column_height; ++y)//load a column of chunks in this position
@@ -108,9 +189,9 @@ public class ChunkStreamer : MonoBehaviour
     {
         if (load_list.Count != 0)
         {
-            for (int i = 0; i < load_list.Count && i < max_chunks_built_per_frame; ++i)
+            for (int i = 0; i < load_list.Count && (i < max_chunks_built_per_frame); ++i)
             {
-                LoadChunk(load_list[0]);
+                LoadChunk(voxel_world, load_list[0]);
                 load_list.RemoveAt(0);//index 0 as entries are removed
             }
             return;
@@ -123,7 +204,6 @@ public class ChunkStreamer : MonoBehaviour
         {
             Chunk chunk = voxel_world.GetChunk(update_list[0].x,
                 update_list[0].y, update_list[0].z);//try and get chunk
-
             if (chunk != null)
                 chunk.edited = true;//set it to update its mesh
 
@@ -132,10 +212,10 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    private void LoadChunk(intVector3 _position)
+    private void LoadChunk(VoxelWorld _voxel_world, intVector3 _position)
     {
-        if (voxel_world.GetChunk(_position.x, _position.y, _position.z) == null)
-            voxel_world.CreateChunk(_position.x, _position.y, _position.z);
+        if (_voxel_world.GetChunk(_position.x, _position.y, _position.z) == null)
+            _voxel_world.CreateChunk(_position.x, _position.y, _position.z);
     }
 
 
@@ -147,7 +227,7 @@ public class ChunkStreamer : MonoBehaviour
 
             foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
             {
-                TryScheduleForUnload(chunk, chunks_to_unload);//determine if chunk needs unloading
+                TryScheduleForUnload(chunk, chunks_to_unload, GetActiveStreamerPositions());//determine if chunk needs unloading
             }
 
             chunks_to_unload.ForEach(chunk => voxel_world.DestroyChunk(chunk.x, chunk.y, chunk.z));//unload these chunks
@@ -161,16 +241,36 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    private void TryScheduleForUnload(KeyValuePair<intVector3, Chunk> _chunk, List<intVector3> _chunks_to_unload)
+    List<Vector3> GetActiveStreamerPositions()
+    {
+        List<Vector3> positions = active_chunk_streamers.Select(streamer => streamer.transform.position).ToList();
+        return positions;
+    }
+
+
+    private void UnloadChunksThreadSafe(List<Vector3> _streamer_positions)
+    {
+        List<intVector3> chunks_to_unload = new List<intVector3>();
+
+        foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
+        {
+            TryScheduleForUnload(chunk, chunks_to_unload, _streamer_positions);//determine if chunk needs unloading
+        }
+
+        chunks_to_unload.ForEach(chunk => thread_manager.QueueForMainThread(() =>
+        {
+            voxel_world.DestroyChunk(chunk.x, chunk.y, chunk.z);
+        }));//unload these chunks on main thread
+    }
+
+
+    private void TryScheduleForUnload(KeyValuePair<intVector3, Chunk> _chunk, List<intVector3> _chunks_to_unload, List<Vector3> _streamer_positions)
     {
         bool unload = true;
-        foreach (ChunkStreamer streamer in active_chunk_streamers)
+        foreach (Vector3 pos in _streamer_positions)
         {
-            if (!streamer.isActiveAndEnabled)
-                continue;
-
             float distance = (new Vector3(_chunk.Value.voxel_world_position.x, 0, _chunk.Value.voxel_world_position.z) -
-                            new Vector3(streamer.transform.position.x, 0, streamer.transform.position.z)).sqrMagnitude;//avoid square root
+                            new Vector3(pos.x, 0, pos.z)).sqrMagnitude;//avoid square root
 
             if (distance < unload_distance * unload_distance)
                 unload = false;
@@ -184,5 +284,6 @@ public class ChunkStreamer : MonoBehaviour
     private void OnDestroy()
     {
         active_chunk_streamers.Remove(this);
+        thread_manager.OnDestroy();
     }
 }

@@ -120,7 +120,13 @@ public class VoxelWorld : MonoBehaviour
 
     public Chunk GetChunk(int _x, int _y, int _z)
     {
-        intVector3 position = new intVector3(_x, _y, _z);
+        intVector3 position = new intVector3();
+        float chunk_size = Chunk.chunk_size;//convert to float for division
+
+        position.x = Mathf.FloorToInt(_x / chunk_size) * Chunk.chunk_size;
+        position.y = Mathf.FloorToInt(_y / chunk_size) * Chunk.chunk_size;
+        position.z = Mathf.FloorToInt(_z / chunk_size) * Chunk.chunk_size;
+
         Chunk chunk = null;
         chunks.TryGetValue(position, out chunk);
 

@@ -4,16 +4,16 @@
 [Serializable]
 public class VoxelWoodLog : Voxel
 {
-    public override TileTexture GetTextureCoordsByDirection(Direction direction)
+    public override MeshCreator.TileTexture GetTextureCoordsByDirection(MeshCreator.Direction direction)
     {
-        TileTexture tile_texture = new TileTexture();
+        MeshCreator.TileTexture tile_texture = new MeshCreator.TileTexture();
         switch (direction)
         {
-            case Direction.TOP:
+            case MeshCreator.Direction.TOP:
                 tile_texture.x = 2;
                 tile_texture.y = 1;
                 return tile_texture;
-            case Direction.BOTTOM:
+            case MeshCreator.Direction.BOTTOM:
                 tile_texture.x = 2;
                 tile_texture.y = 1;
                 return tile_texture;

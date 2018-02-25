@@ -6,44 +6,12 @@ using System;
 [Serializable]
 public class Voxel
 {
-    enum VoxelType//unfortunately needed to determine type to create 
-    {
-        STONE,
-        GRASS,
-        STONEBRICK,
-        WOODPLANKS,
-        GLASSPANNEL,
-        WOODLOG,
-        BLUEWOOL,
-        VOXELCHAIR,
-    }
-
-
-    public enum Direction
-    {
-        BACK,
-        RIGHT,
-        FRONT,
-        LEFT,
-        TOP,
-        BOTTOM
-    };
-
-
-    public struct TileTexture
-    {
-        public int x;
-        public int y;
-    }
-
-
-    const float tile_texture_size = 0.25f;//assumes 4X4 texture should change later
     public bool edited = true;
 
 
-    public virtual TileTexture GetTextureCoordsByDirection(Direction _direction)//base defaults to first tile
+    public virtual MeshCreator.TileTexture GetTextureCoordsByDirection(MeshCreator.Direction _direction)//base defaults to first tile
     {
-        TileTexture tile_texture = new TileTexture
+        MeshCreator.TileTexture tile_texture = new MeshCreator.TileTexture
         {
             x = 0,
             y = 0
@@ -73,160 +41,7 @@ public class Voxel
 
     public virtual MeshInfo GetVoxelMeshInfo (Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
     {
-        switch (_chunk.voxel_world.mesh_generation_type)
-        {
-            case MeshGenerationType.NAIVE_CUBES:
-                return NaiveCube(_chunk, _x, _y, _z, _mesh_info);
-            case MeshGenerationType.CUBES:
-                return Cubes(_chunk, _x, _y, _z, _mesh_info);
-            case MeshGenerationType.MARCHING_CUBES:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-
-        return _mesh_info;
-    }
-
-
-    private MeshInfo Cubes(Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info = CreateTopFace(_x, _y, _z, _mesh_info);
-        _mesh_info = CreateBottomFace(_x, _y, _z, _mesh_info);
-        _mesh_info = CreateBackFace(_x, _y, _z, _mesh_info);
-        _mesh_info = CreateFrontFace(_x, _y, _z, _mesh_info);
-        _mesh_info = CreateRightFace(_x, _y, _z, _mesh_info);
-        _mesh_info = CreateLeftFace(_x, _y, _z, _mesh_info);
-
-        return _mesh_info;
-    }
-
-
-    private MeshInfo NaiveCube(Chunk _chunk, int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        //determine face to create based on adjacency
-        if (ShouldMakeFace(_chunk, _x, _y + 1, _z))
-            _mesh_info = CreateTopFace(_x, _y, _z, _mesh_info);
-
-        if (ShouldMakeFace(_chunk, _x, _y - 1, _z))
-            _mesh_info = CreateBottomFace(_x, _y, _z, _mesh_info);
-
-        if (ShouldMakeFace(_chunk, _x, _y, _z + 1))
-            _mesh_info = CreateBackFace(_x, _y, _z, _mesh_info);
-
-        if (ShouldMakeFace(_chunk, _x, _y, _z - 1))
-            _mesh_info = CreateFrontFace(_x, _y, _z, _mesh_info);
-
-        if (ShouldMakeFace(_chunk, _x + 1, _y, _z))
-            _mesh_info = CreateRightFace(_x, _y, _z, _mesh_info);
-
-        if (ShouldMakeFace(_chunk, _x - 1, _y, _z))
-            _mesh_info = CreateLeftFace(_x, _y, _z, _mesh_info);
-
-        return _mesh_info;
-    }
-
-
-    bool ShouldMakeFace(Chunk _chunk, int _x, int _y, int _z)
-    {
-        Voxel voxel = _chunk.GetVoxel(_x, _y, _z);
-        return (!voxel.IsSolid() || voxel.HasCustomMesh());
-    }
-
-
-    protected MeshInfo CreateTopFace (int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y + 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y + 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z - 0.5f));
-
-        _mesh_info.AddFaceIndices();
-
-        if (!_mesh_info.collider_only)
-            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.TOP));//add top uvs
-
-        return _mesh_info;
-    }
-
-
-    protected MeshInfo CreateBottomFace(int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z + 0.5f));
-
-        _mesh_info.AddFaceIndices();
-
-        if (!_mesh_info.collider_only)
-            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.BOTTOM));
-
-        return _mesh_info;
-    }
-
-
-    protected MeshInfo CreateBackFace(int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y + 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z + 0.5f));
-
-        _mesh_info.AddFaceIndices();
-
-        if (!_mesh_info.collider_only)
-            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.BACK));
-
-        return _mesh_info;
-    }
-
-
-    protected MeshInfo CreateRightFace(int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y + 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y + 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z + 0.5f));
-
-        _mesh_info.AddFaceIndices();
-
-        if (!_mesh_info.collider_only)
-            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.RIGHT));
-
-        return _mesh_info;
-    }
-
-
-    protected MeshInfo CreateFrontFace(int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y + 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x + 0.5f, _y - 0.5f, _z - 0.5f));
-
-        _mesh_info.AddFaceIndices();
-
-        if (!_mesh_info.collider_only)
-            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.FRONT));
-
-        return _mesh_info;
-    }
-
-
-    protected MeshInfo CreateLeftFace(int _x, int _y, int _z, MeshInfo _mesh_info)
-    {
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z + 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y + 0.5f, _z - 0.5f));
-        _mesh_info.AddVertex(new Vector3(_x - 0.5f, _y - 0.5f, _z - 0.5f));
-
-        _mesh_info.AddFaceIndices();
-
-        if (!_mesh_info.collider_only)
-            _mesh_info.uvs.AddRange(GetFaceUVs(Direction.LEFT));
-
-        return _mesh_info;
+        return MeshCreator.GenerateMesh(_chunk, _x, _y, _z, _mesh_info, this);
     }
 
 

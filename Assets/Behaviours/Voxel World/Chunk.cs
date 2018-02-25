@@ -83,16 +83,7 @@ public class Chunk : MonoBehaviour
         rendered = true;
 
         MeshInfo mesh_info = new MeshInfo();
-        for (int x = 0; x < chunk_size; ++x)
-        {
-            for (int y = 0; y < chunk_size; ++y)
-            {
-                for (int z = 0; z < chunk_size; ++z)
-                {
-                    mesh_info = voxels[GetIndex(x, y, z)].GetVoxelMeshInfo(this, x, y, z, mesh_info);//Get voxels mesh info
-                }
-            }
-        }
+        mesh_info = MeshCreator.CreateMesh(this, mesh_info);
         RenderMesh(mesh_info);
     }
 

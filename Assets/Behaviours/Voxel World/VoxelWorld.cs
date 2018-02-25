@@ -6,7 +6,8 @@ using UnityEngine;
 public enum MeshGenerationType
 {
     NAIVE_CUBES,
-    CUBES, 
+    CUBES,
+    GREEDY,
     MARCHING_CUBES
 };
 

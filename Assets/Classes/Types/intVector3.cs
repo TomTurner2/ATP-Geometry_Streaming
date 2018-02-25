@@ -43,18 +43,6 @@ public struct intVector3
     }
 
 
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            var hash_code = x;
-            hash_code = (hash_code * 397) ^ y;
-            hash_code = (hash_code * 397) ^ z;
-            return hash_code;
-        }
-    }
-
-
     public static readonly intVector3 Zero = new intVector3(0, 0, 0);
     public static readonly intVector3 One = new intVector3(1, 1, 1);
     public static readonly intVector3 Up = new intVector3(0, 1, 0);

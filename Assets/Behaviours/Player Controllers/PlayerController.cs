@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float rotation_speed = 3;
     [SerializeField] float sprint_multiplier = 2;
     [SerializeField] float jump_force = 500;
-    [SerializeField] Rigidbody rigid_body = null;
+    [SerializeField] Rigidbody rigidbody = null;
     [SerializeField] Camera camera_target = null;
 
     private Vector2 rotation;
@@ -43,20 +43,20 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        if (rigid_body == null)
+        if (rigidbody == null)
             return;
 
         Vector3 position = CalculateMovePosition();
-        rigid_body.MovePosition(position);
+        rigidbody.MovePosition(position);
     }
 
 
     private void Jump()
     {
-        if (rigid_body == null || !jumping)
+        if (rigidbody == null || !jumping)
             return;
 
-        rigid_body.AddForce(new Vector3(0, jump_force * rigid_body.mass, 0), ForceMode.Impulse);
+        rigidbody.AddForce(new Vector3(0, jump_force * rigidbody.mass, 0), ForceMode.Impulse);
         jumping = false;
     }
 
@@ -85,12 +85,12 @@ public class PlayerController : MonoBehaviour
         float x_speed = speed * Input.GetAxis("Vertical") * Time.deltaTime;
         float z_speed = speed * Input.GetAxis("Horizontal") * Time.deltaTime;
 
-        Vector3 position = rigid_body.position;
+        Vector3 position = rigidbody.position;
         position += camera_target.transform.forward * x_speed;
         position += camera_target.transform.right * z_speed;
 
-        if (rigid_body.useGravity)
-            position = new Vector3(position.x, rigid_body.position.y, position.z);//prevent flying
+        if (rigidbody.useGravity)
+            position = new Vector3(position.x, rigidbody.position.y, position.z);//prevent flying
 
         return position;
     }
@@ -101,7 +101,7 @@ public class PlayerController : MonoBehaviour
         if (!Input.GetKeyDown(KeyCode.F))
             return;
 
-        rigid_body.useGravity = !rigid_body.useGravity;
+        rigidbody.useGravity = !rigidbody.useGravity;
     }
 
 

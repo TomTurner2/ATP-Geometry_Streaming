@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class MeshCreator
@@ -41,7 +43,6 @@ public static class MeshCreator
 
         return uvs;
     }
-
 
     public static MeshInfo CreateMesh(Chunk _chunk, MeshInfo _mesh_info)
     {
@@ -217,5 +218,4 @@ public static class MeshCreator
 
         return _mesh_info;
     }
-
 }

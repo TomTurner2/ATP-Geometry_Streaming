@@ -11,16 +11,13 @@ public class ThreadManager
 	//must be called from main thread
 	public void Update ()
     {
-        lock (jobs_queue_main_thread)//need to lock as other threads may try to use list
+        for (int i = 0; i < jobs_queue_main_thread.Count; ++i)
         {
-            for (int i = 0; i < jobs_queue_main_thread.Count; ++i)
-            {
-                Action job = jobs_queue_main_thread[0];//get job
-                if (job != null)
-                    job();//call job
-                jobs_queue_main_thread.RemoveAt(0);//remove job
-            }
-        }
+            Action job = jobs_queue_main_thread[0];//get job
+            if (job != null)
+                job();//call job
+            jobs_queue_main_thread.RemoveAt(0);//remove job
+        } 
 	}
 
 
@@ -50,10 +47,7 @@ public class ThreadManager
 
     public void QueueForMainThread(Action _job)
     {
-        lock (jobs_queue_main_thread)
-        {
-            jobs_queue_main_thread.Add(_job);
-        } 
+        jobs_queue_main_thread.Add(_job);
     }
 
 

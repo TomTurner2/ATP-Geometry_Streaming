@@ -13,6 +13,7 @@ public class ChunkStreamer : MonoBehaviour
     [SerializeField] uint max_chunk_radius = 8;
     [SerializeField] uint max_chunks_built_per_frame = 2;
     [SerializeField] bool multithreading = false;
+    [SerializeField] bool object_pooling = true;
     
     private List<intVector3> update_list = new List<intVector3>();
     private List<intVector3> load_list = new List<intVector3>();
@@ -20,6 +21,9 @@ public class ChunkStreamer : MonoBehaviour
 
     private ThreadManager thread_manager = new ThreadManager();
     intVector3 current_world_position;
+    List<Vector3> streamer_positions = new List<Vector3>();
+
+    List<Chunk> chunk_pool = new List<Chunk>(); 
 
     private static List<intVector3> chunk_positions = null;
     private static List<ChunkStreamer> active_chunk_streamers = new List<ChunkStreamer>();
@@ -31,6 +35,21 @@ public class ChunkStreamer : MonoBehaviour
             GenerateStaticChunkPositions();
 
         active_chunk_streamers.Add(this);
+
+
+        if (object_pooling)
+        {
+           InitObjectPooling();
+        }
+    }
+
+
+    private void InitObjectPooling()
+    {
+        for (int i = 0; i < chunk_positions.Count; ++i)
+        {
+            chunk_pool.Add(voxel_world.CreateEmptyChunk());
+        }
     }
 
 
@@ -81,9 +100,9 @@ public class ChunkStreamer : MonoBehaviour
     void ThreadedUpdate()
     {
         current_world_position = transform.position;
-        List<Vector3> streamer_pos = GetActiveStreamerPositions();
+        streamer_positions = GetActiveStreamerPositions();
 
-        thread_manager.StartThreadedJob(() =>{UnloadChunksThreadSafe(streamer_pos);});
+        thread_manager.StartThreadedJob(UnloadChunksThreadSafe);
         thread_manager.StartThreadedJob(()=>
         {
             FindChunksToLoad();
@@ -102,7 +121,14 @@ public class ChunkStreamer : MonoBehaviour
                 intVector3 temp = load_list[0];
                 thread_manager.QueueForMainThread(()=>
                 {
-                    LoadChunk(voxel_world, temp);
+                    if (object_pooling)
+                    {
+                        ReuseChunk(voxel_world, temp);
+                    }
+                    else
+                    {
+                        LoadChunk(voxel_world, temp);
+                    }
                 });
                
                 load_list.RemoveAt(0);//index 0 as entries are removed
@@ -192,7 +218,15 @@ public class ChunkStreamer : MonoBehaviour
         {
             for (int i = 0; i < load_list.Count && (i < max_chunks_built_per_frame); ++i)
             {
-                LoadChunk(voxel_world, load_list[0]);
+                if (object_pooling)
+                {
+                    ReuseChunk(voxel_world, load_list[0]);
+                }
+                else
+                {
+                    LoadChunk(voxel_world, load_list[0]);      
+                }
+
                 load_list.RemoveAt(0);//index 0 as entries are removed
             }
             return;
@@ -213,6 +247,26 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
+    private void ReuseChunk(VoxelWorld _voxel_world, intVector3 _position)
+    {
+        if (_voxel_world.GetChunk(_position.x, _position.y, _position.z) != null)
+            return;
+
+        if (chunk_pool.Count <= 0)
+            TryUnloadChunks();//if no chunks in pool available try unload old ones
+
+        if (chunk_pool.Count <= 0)
+        {
+            LoadChunk(_voxel_world, _position);//if still none create one
+        }
+        else
+        {
+            _voxel_world.ReuseChunk(chunk_pool[0], _position);//reuse chunk if available
+            chunk_pool.RemoveAt(0);
+        }
+    }
+
+
     private void LoadChunk(VoxelWorld _voxel_world, intVector3 _position)
     {
         if (_voxel_world.GetChunk(_position.x, _position.y, _position.z) == null)
@@ -224,21 +278,39 @@ public class ChunkStreamer : MonoBehaviour
     {
         if (unload_timer >= Mathf.Max(0, chunk_unload_delay))//unload after delay (min delay 0)
         {
-            List<intVector3> chunks_to_unload = new List<intVector3>();
-
-            foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
-            {
-                TryScheduleForUnload(chunk, chunks_to_unload, GetActiveStreamerPositions());//determine if chunk needs unloading
-            }
-
-            chunks_to_unload.ForEach(chunk => voxel_world.DestroyChunk(chunk.x, chunk.y, chunk.z));//unload these chunks
-
+            TryUnloadChunks();
             unload_timer = 0;
             return true;
         }
 
         unload_timer += Time.deltaTime;
         return false;
+    }
+
+
+    private void TryUnloadChunks()
+    {
+        List<intVector3> chunks_to_unload = new List<intVector3>();
+
+        foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
+        {
+            TryScheduleForUnload(chunk, chunks_to_unload, GetActiveStreamerPositions());//determine if chunk needs unloading
+        }
+
+        if (object_pooling)
+        {
+            foreach (intVector3 chunk_pos in chunks_to_unload)
+            {
+                Chunk chunk = voxel_world.GetChunk(chunk_pos.x, chunk_pos.y, chunk_pos.z);
+                chunk.gameObject.SetActive(false);
+                chunk_pool.Add(chunk);
+            }
+        }
+        else
+        {
+            chunks_to_unload.ForEach(chunk => voxel_world.DestroyChunk(chunk.x, chunk.y, chunk.z));//unload these chunks
+        }
+
     }
 
 
@@ -249,13 +321,13 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
-    private void UnloadChunksThreadSafe(List<Vector3> _streamer_positions)
+    private void UnloadChunksThreadSafe()
     {
         List<intVector3> chunks_to_unload = new List<intVector3>();
 
         foreach (KeyValuePair<intVector3, Chunk> chunk in voxel_world.chunks)
         {
-            TryScheduleForUnload(chunk, chunks_to_unload, _streamer_positions);//determine if chunk needs unloading
+            TryScheduleForUnload(chunk, chunks_to_unload, streamer_positions);//determine if chunk needs unloading
         }
 
         chunks_to_unload.ForEach(chunk => thread_manager.QueueForMainThread(() =>

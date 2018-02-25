@@ -55,6 +55,56 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
+    public Chunk CreateEmptyChunk()
+    {
+        GameObject chunk_object = Instantiate(chunk_prefab, Vector3.zero, Quaternion.Euler(Vector3.zero));//create chunk
+
+        //set chunk parameters
+        Chunk chunk = chunk_object.GetComponent<Chunk>();
+        chunk.voxel_world_position = Vector3.zero;
+        chunk.voxel_world = this;
+        chunk.transform.parent = transform;
+        chunk.name = "World Chunk";
+        chunk.gameObject.isStatic = true;
+        chunk.gameObject.SetActive(false);
+
+        return chunk;
+    }
+
+
+    public void ReuseChunk(Chunk _chunk, intVector3 _position)
+    {
+       // intVector3 voxel_world_position = new intVector3(_x, _y, _z);//the coordinates of chunk in the world
+        _chunk.transform.position = _position;
+        _chunk.voxel_world_position = _position;
+
+        _chunk.gameObject.SetActive(true);
+
+        _chunk.voxel_world = this;
+        _chunk.transform.parent = transform;
+        _chunk.name = "World Chunk";
+        _chunk.gameObject.isStatic = true;
+
+        chunks.Add(_position, _chunk);//store chunk in dictionary by its position
+        _chunk = terrain_generator.GenerateChunk(_chunk);
+
+        _chunk.SetVoxelsUnEdited();
+        VoxelWorldSaver.Load(_chunk);      
+    }
+
+
+    public void RemoveChunk(int _x, int _y, int _z)
+    {
+        Chunk chunk = null;
+        if (!chunks.TryGetValue(new intVector3(_x, _y, _z), out chunk))//if not in dictionary leave
+            return;
+
+        VoxelWorldSaver.SaveChunk(chunk);//save chunk
+        chunk.gameObject.SetActive(false);
+        chunks.Remove(new intVector3(_x, _y, _z));//remove entry from dictionary
+    }
+
+
     public void DestroyChunk(int _x, int _y, int _z)
     {
         Chunk chunk = null;

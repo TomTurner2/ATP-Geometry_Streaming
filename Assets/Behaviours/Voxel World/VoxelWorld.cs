@@ -67,7 +67,6 @@ public class VoxelWorld : MonoBehaviour
         chunk.transform.parent = transform;
         chunk.name = "World Chunk";
         chunk.gameObject.isStatic = true;
-        chunk.gameObject.SetActive(false);
 
         return chunk;
     }
@@ -94,15 +93,20 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
-    public void RemoveChunk(int _x, int _y, int _z)
+    public Chunk RemoveChunk(Chunk _chunk)
     {
         Chunk chunk = null;
-        if (!chunks.TryGetValue(new intVector3(_x, _y, _z), out chunk))//if not in dictionary leave
-            return;
+        if (!chunks.TryGetValue(new intVector3(_chunk.voxel_world_position.x, _chunk.voxel_world_position.y, _chunk.voxel_world_position.z), out chunk))//if not in dictionary leave
+            return null;
 
         VoxelWorldSaver.SaveChunk(chunk);//save chunk
+        chunks.Remove(new intVector3(_chunk.voxel_world_position.x, _chunk.voxel_world_position.y, _chunk.voxel_world_position.z));//remove entry from dictionary
+
         chunk.gameObject.SetActive(false);
-        chunks.Remove(new intVector3(_x, _y, _z));//remove entry from dictionary
+        chunk.ClearMeshData();
+        chunk.edited = false;
+        chunk.rendered = false;
+        return chunk;
     }
 
 

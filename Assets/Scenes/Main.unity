@@ -231,6 +231,8 @@ MonoBehaviour:
   max_chunk_y: 8
   max_chunk_radius: 6
   max_chunks_built_per_frame: 8
+  multithreading: 0
+  object_pooling: 1
 --- !u!4 &699382910
 Transform:
   m_ObjectHideFlags: 0
@@ -970,6 +972,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &1686884466 stripped
+Rigidbody:
+  m_PrefabParentObject: {fileID: 54818991310586536, guid: 6dc65ff13982b6942b2ac5017eb8a055,
+    type: 2}
+  m_PrefabInternal: {fileID: 1792239642}
 --- !u!1 &1695145689
 GameObject:
   m_ObjectHideFlags: 0
@@ -1141,6 +1148,21 @@ Prefab:
       propertyPath: voxel_world
       value: 
       objectReference: {fileID: 1088050180}
+    - target: {fileID: 114966954851874938, guid: 6dc65ff13982b6942b2ac5017eb8a055,
+        type: 2}
+      propertyPath: rigid_body
+      value: 
+      objectReference: {fileID: 1686884466}
+    - target: {fileID: 114210133323615592, guid: 6dc65ff13982b6942b2ac5017eb8a055,
+        type: 2}
+      propertyPath: multithreading
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114210133323615592, guid: 6dc65ff13982b6942b2ac5017eb8a055,
+        type: 2}
+      propertyPath: object_pooling
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
   m_IsPrefabParent: 0

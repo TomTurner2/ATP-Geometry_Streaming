@@ -23,7 +23,8 @@ public class ChunkStreamer : MonoBehaviour
     intVector3 current_world_position;
     List<Vector3> streamer_positions = new List<Vector3>();
 
-    List<Chunk> chunk_pool = new List<Chunk>(); 
+    List<Chunk> available_chunks = new List<Chunk>(); 
+    List<Chunk> used_chunks = new List<Chunk>();
 
     private static List<intVector3> chunk_positions = null;
     private static List<ChunkStreamer> active_chunk_streamers = new List<ChunkStreamer>();
@@ -35,23 +36,7 @@ public class ChunkStreamer : MonoBehaviour
             GenerateStaticChunkPositions();
 
         active_chunk_streamers.Add(this);
-
-
-        if (object_pooling)
-        {
-           InitObjectPooling();
-        }
     }
-
-
-    private void InitObjectPooling()
-    {
-        for (int i = 0; i < chunk_positions.Count; ++i)
-        {
-            chunk_pool.Add(voxel_world.CreateEmptyChunk());
-        }
-    }
-
 
     private void OnDisable()
     {
@@ -80,6 +65,34 @@ public class ChunkStreamer : MonoBehaviour
         }
 
         chunk_positions = chunk_positions.OrderBy(pos => Vector3.Distance(intVector3.Zero, pos)).ToList();//order by closeness to centre 0, 0
+    }
+
+
+    public  Chunk GetChunkFromPool()
+    {
+        lock (available_chunks)
+        {
+            if (available_chunks.Count != 0)
+            {
+                Chunk chunk = available_chunks[0];
+                used_chunks.Add(chunk);
+                available_chunks.RemoveAt(0);
+                return chunk;
+            }
+            else
+            {
+                Chunk chunk = voxel_world.CreateEmptyChunk();
+                used_chunks.Add(chunk);
+                return chunk;
+            }
+        }
+    }
+
+
+    public void ReleaseChunk(Chunk _chunk)
+    {
+        available_chunks.Add(_chunk);
+        used_chunks.Add(voxel_world.RemoveChunk(_chunk));
     }
 
 
@@ -252,18 +265,7 @@ public class ChunkStreamer : MonoBehaviour
         if (_voxel_world.GetChunk(_position.x, _position.y, _position.z) != null)
             return;
 
-        if (chunk_pool.Count <= 0)
-            TryUnloadChunks();//if no chunks in pool available try unload old ones
-
-        if (chunk_pool.Count <= 0)
-        {
-            LoadChunk(_voxel_world, _position);//if still none create one
-        }
-        else
-        {
-            _voxel_world.ReuseChunk(chunk_pool[0], _position);//reuse chunk if available
-            chunk_pool.RemoveAt(0);
-        }
+        _voxel_world.ReuseChunk(GetChunkFromPool(), _position);//reuse chunk if available
     }
 
 
@@ -302,8 +304,7 @@ public class ChunkStreamer : MonoBehaviour
             foreach (intVector3 chunk_pos in chunks_to_unload)
             {
                 Chunk chunk = voxel_world.GetChunk(chunk_pos.x, chunk_pos.y, chunk_pos.z);
-                chunk.gameObject.SetActive(false);
-                chunk_pool.Add(chunk);
+                ReleaseChunk(chunk);
             }
         }
         else

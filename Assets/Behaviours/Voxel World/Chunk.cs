@@ -32,6 +32,13 @@ public class Chunk : MonoBehaviour
     }
 
 
+    public void ClearMeshData()
+    {
+        mesh_collider.sharedMesh = null;
+        mesh_filter.sharedMesh = null;
+    }
+
+
     void Update()
     {
         if (!edited)

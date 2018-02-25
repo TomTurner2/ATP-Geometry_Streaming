@@ -12,7 +12,7 @@ public class ChunkStreamer : MonoBehaviour
     [SerializeField] uint max_chunk_y = 8;
     [SerializeField] uint max_chunk_radius = 8;
     [SerializeField] uint max_chunks_built_per_frame = 2;
-    [SerializeField] bool multithreading = true;
+    [SerializeField] bool multithreading = false;
     
     private List<intVector3> update_list = new List<intVector3>();
     private List<intVector3> load_list = new List<intVector3>();
@@ -67,6 +67,7 @@ public class ChunkStreamer : MonoBehaviour
     private void Update()
     {   
         current_world_position = VoxelWorld.PositionToWorldPosition(transform.position);
+
         if (multithreading)
         {
             ThreadedUpdate();
@@ -88,7 +89,7 @@ public class ChunkStreamer : MonoBehaviour
             FindChunksToLoad();
             LoadAndUpdateThreadSafe();
         });
-        thread_manager.Update();//bottleneck
+        thread_manager.Update();// bottleneck
     }
 
 

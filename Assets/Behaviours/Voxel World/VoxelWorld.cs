@@ -138,6 +138,15 @@ public class VoxelWorld : MonoBehaviour
     }
 
 
+    public Chunk GetChunkUnFloored(intVector3 _position)
+    {
+        Chunk chunk = null;
+        chunks.TryGetValue(_position, out chunk);
+
+        return chunk;
+    }
+
+
     public Voxel GetVoxel(int _x, int _y, int _z)
     {
         Chunk chunk = GetChunk(_x, _y, _z);

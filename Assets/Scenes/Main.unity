@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 8
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_Fog: 1
+  m_FogColor: {r: 0.7803922, g: 0.86274517, b: 0.9686275, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.003
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 5072c671f5d9f4003a83241b424bb0f0, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 0}
+  m_Sun: {fileID: 1695145690}
   m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
 --- !u!157 &3
 LightmapSettings:
@@ -972,11 +972,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!54 &1686884466 stripped
-Rigidbody:
-  m_PrefabParentObject: {fileID: 54818991310586536, guid: 6dc65ff13982b6942b2ac5017eb8a055,
-    type: 2}
-  m_PrefabInternal: {fileID: 1792239642}
 --- !u!1 &1695145689
 GameObject:
   m_ObjectHideFlags: 0
@@ -1148,21 +1143,6 @@ Prefab:
       propertyPath: voxel_world
       value: 
       objectReference: {fileID: 1088050180}
-    - target: {fileID: 114966954851874938, guid: 6dc65ff13982b6942b2ac5017eb8a055,
-        type: 2}
-      propertyPath: rigid_body
-      value: 
-      objectReference: {fileID: 1686884466}
-    - target: {fileID: 114210133323615592, guid: 6dc65ff13982b6942b2ac5017eb8a055,
-        type: 2}
-      propertyPath: multithreading
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114210133323615592, guid: 6dc65ff13982b6942b2ac5017eb8a055,
-        type: 2}
-      propertyPath: object_pooling
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 6dc65ff13982b6942b2ac5017eb8a055, type: 2}
   m_IsPrefabParent: 0

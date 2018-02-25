@@ -53,7 +53,7 @@ public class ThreadManager
         lock (jobs_queue_main_thread)
         {
             jobs_queue_main_thread.Add(_job);
-        } 
+        }
     }
 
 

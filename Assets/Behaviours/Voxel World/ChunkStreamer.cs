@@ -23,8 +23,8 @@ public class ChunkStreamer : MonoBehaviour
     intVector3 current_world_position;
     List<Vector3> streamer_positions = new List<Vector3>();
 
-    List<Chunk> available_chunks = new List<Chunk>(); 
-    List<Chunk> used_chunks = new List<Chunk>();
+    static List<Chunk> available_chunks = new List<Chunk>(); 
+    static List<Chunk> used_chunks = new List<Chunk>();
 
     private static List<intVector3> chunk_positions = null;
     private static List<ChunkStreamer> active_chunk_streamers = new List<ChunkStreamer>();
@@ -37,6 +37,7 @@ public class ChunkStreamer : MonoBehaviour
 
         active_chunk_streamers.Add(this);
     }
+
 
     private void OnDisable()
     {
@@ -156,8 +157,7 @@ public class ChunkStreamer : MonoBehaviour
             intVector3 temp = update_list[0];
             thread_manager.QueueForMainThread(() =>
             {
-                Chunk chunk = voxel_world.GetChunk(temp.x,
-                temp.y, temp.z);//try and get chunk
+                Chunk chunk = voxel_world.GetChunkUnFloored(temp);//try and get chunk
 
                 if (chunk != null)
                     chunk.edited = true;//set it to update its mesh

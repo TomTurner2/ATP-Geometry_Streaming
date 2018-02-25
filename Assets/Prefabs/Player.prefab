@@ -160,6 +160,8 @@ MonoBehaviour:
   max_chunk_y: 8
   max_chunk_radius: 6
   max_chunks_built_per_frame: 8
+  multithreading: 0
+  object_pooling: 1
 --- !u!114 &114747612613335908
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -199,7 +201,7 @@ MonoBehaviour:
   rotation_speed: 3
   sprint_multiplier: 2
   jump_force: 7
-  rigidbody: {fileID: 54818991310586536}
+  rigid_body: {fileID: 54818991310586536}
   camera_target: {fileID: 20300416136118472}
 --- !u!124 &124698806506123450
 Behaviour:

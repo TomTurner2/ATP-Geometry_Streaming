@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class GameInfo
+﻿public static class GameInfo
 {
     private static string world_name = "World";
 

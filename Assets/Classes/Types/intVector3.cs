@@ -9,9 +9,9 @@ public struct intVector3
     public int x, y, z;
     public intVector3(int _x, int _y, int _z)
     {
-        this.x = _x;
-        this.y = _y;
-        this.z = _z;
+        x = _x;
+        y = _y;
+        z = _z;
     }
 
 
@@ -43,7 +43,7 @@ public struct intVector3
     }
 
 
-    public override int GetHashCode()
+    public override int GetHashCode()//required for dictionary, keys have to be unique
     {
         unchecked
         {

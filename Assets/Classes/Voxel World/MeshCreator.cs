@@ -68,13 +68,9 @@ public static class MeshCreator
                 return NaiveCube(_chunk, _x, _y, _z, _mesh_info, _voxel);
             case MeshGenerationType.CUBES:
                 return Cubes(_chunk, _x, _y, _z, _mesh_info, _voxel);
-            case MeshGenerationType.MARCHING_CUBES:
-                break;
             default:
-                throw new ArgumentOutOfRangeException();
+                return _mesh_info;
         }
-
-        return _mesh_info;
     }
 
 

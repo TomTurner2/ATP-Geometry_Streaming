@@ -17,7 +17,7 @@ public static class Terraformer
 
     static float MoveToVoxelCentre(float _pos, float _normal, bool _adjacent = false)
     {
-        if (AxisPositionIsCentred(_pos))
+        if (PositionAlreadyCentred(_pos))
             return _pos;
 
         if (_adjacent)
@@ -31,7 +31,7 @@ public static class Terraformer
     }
 
 
-    private static bool AxisPositionIsCentred(float _pos)
+    private static bool PositionAlreadyCentred(float _pos)
     {
         return (Math.Abs(_pos - (int)_pos - 0.5f) > 0.1f && Math.Abs(_pos - (int)_pos - (-0.5f)) > 0.1f);//check if position is not already inside block
     }

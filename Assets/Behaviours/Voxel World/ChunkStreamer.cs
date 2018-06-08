@@ -1,6 +1,5 @@
-﻿using System.Collections;
+﻿
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 
@@ -113,7 +112,6 @@ public class ChunkStreamer : MonoBehaviour
 
     void ThreadedUpdate()
     {
-        current_world_position = transform.position;
         streamer_positions = GetActiveStreamerPositions();
 
         thread_manager.StartThreadedJob(UnloadChunksThreadSafe);
@@ -122,7 +120,7 @@ public class ChunkStreamer : MonoBehaviour
             FindChunksToLoad();
             LoadAndUpdateThreadSafe();
         });
-        thread_manager.Update();// bottleneck
+        thread_manager.Update();// bottleneck :(
     }
 
 
@@ -157,7 +155,7 @@ public class ChunkStreamer : MonoBehaviour
             intVector3 temp = update_list[0];
             thread_manager.QueueForMainThread(() =>
             {
-                Chunk chunk = voxel_world.GetChunkUnFloored(temp);//try and get chunk
+                Chunk chunk = voxel_world.GetChunk(temp.x, temp.y, temp.z);//try and get chunk
 
                 if (chunk != null)
                     chunk.edited = true;//set it to update its mesh
@@ -331,7 +329,8 @@ public class ChunkStreamer : MonoBehaviour
             TryScheduleForUnload(chunk, chunks_to_unload, streamer_positions);//determine if chunk needs unloading
         }
 
-        chunks_to_unload.ForEach(chunk => thread_manager.QueueForMainThread(() =>
+        chunks_to_unload.ForEach(chunk =>
+        thread_manager.QueueForMainThread(() =>
         {
             voxel_world.DestroyChunk(chunk.x, chunk.y, chunk.z);
         }));//unload these chunks on main thread
@@ -355,9 +354,33 @@ public class ChunkStreamer : MonoBehaviour
     }
 
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        foreach (intVector3 chunk_pos in chunk_positions)
+        {
+            intVector3 chunk_relative_pos = new intVector3(chunk_pos.x * Chunk.chunk_size + current_world_position.x, current_world_position.y,
+                chunk_pos.z * Chunk.chunk_size + current_world_position.z);
+
+            Gizmos.DrawWireCube(chunk_relative_pos, Vector3.one * Chunk.chunk_size);
+        }
+    }
+
+
+    private void CleanUpObjectPool()
+    {
+        if (active_chunk_streamers.Count > 0)
+            return;
+
+        available_chunks.Clear();
+        used_chunks.Clear();
+    }
+
+
     private void OnDestroy()
     {
         active_chunk_streamers.Remove(this);
+        CleanUpObjectPool();
         thread_manager.OnDestroy();
     }
 }

@@ -6,9 +6,7 @@ using UnityEngine;
 public enum MeshGenerationType
 {
     NAIVE_CUBES,
-    CUBES,
-    GREEDY,
-    MARCHING_CUBES
+    CUBES
 };
 
 
@@ -75,6 +73,10 @@ public class VoxelWorld : MonoBehaviour
     public void ReuseChunk(Chunk _chunk, intVector3 _position)
     {
        // intVector3 voxel_world_position = new intVector3(_x, _y, _z);//the coordinates of chunk in the world
+
+        if (_chunk == null)
+            CreateChunk(_position.x, _position.y, _position.z);
+
         _chunk.transform.position = _position;
         _chunk.voxel_world_position = _position;
 
